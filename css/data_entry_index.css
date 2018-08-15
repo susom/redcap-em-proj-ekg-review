@@ -1,0 +1,24 @@
+
+#west {display:none;}
+
+#center {padding: 0 20px 60px 20px;}
+
+
+#dataEntryTopOptions {display:none;}
+/*#dataEntryTopOptionsButtons { display: none; }*/
+
+#formSaveTip { display: none !important; }
+
+
+#contextMsg { display:none; }
+
+
+#submit-btn-placeholder{ display: none; }
+#submit-btn-dropdown { display:none; }
+
+
+/*Hide the Form Status stuff*/
+#ekg_review_complete-sh-tr, #ekg_review_complete-tr { display: none; }
+
+
+#record_id-tr, #group-tr, #start_time-tr { display: none; }
