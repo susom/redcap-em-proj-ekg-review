@@ -8,8 +8,11 @@ $html->PrintHeaderExt();
 
 
 $progress = $this->getProgress($project_id,$this->group_id);
+$percent = $progress['percent'];
 
-$this->emDebug($progress);
+$unassigned = $this->getUnassignedRecords();
+
+//$this->emDebug($progress);
 
 ?>
 
@@ -38,15 +41,49 @@ $this->emDebug($progress);
         <p class="text-center">Thank you for your assistance with the AHS EKG Scoring.
         </p>
 
-        <p class="text-center">
-            You may stop at any time and return to this page to resume.
-        </p>
+        <?php
 
-        <form method="POST">
-            <div class="text-center">
-                <button name="score_next" value="1" class="btn btn-primary btn-lg">Score Next EKG</button>
+        if ($percent != 100) {
+            ?>
+            <p class="text-center">
+                You may stop at any time and return to this page to resume.
+            </p>
+
+            <form method="POST">
+                <div class="text-center">
+                    <button name="score_next" value="1" class="btn btn-primary btn-lg">Score Next EKG</button>
+                </div>
+            </form>
+            <?php
+        } elseif (count($unassigned) == 0) {
+            // There are no more unassigned records
+            ?>
+            <div class="alert alert-success text-center">
+                Congratulations - all EKGs have been claimed.  Your work is done!
             </div>
-        </form>
+            <?php
+        } else {
+            // There are unassigned records remaining
+            ?>
+            <div class="alert alert-success">
+                <p class="text-center">
+                    Additional EKGs need to be reviewed.
+                </p>
+                <p class="text-center">
+                    Please press the button below to claim the
+                    the next batch of records.
+                </p>
+                <br/>
+                <form method="POST">
+                    <div class="text-center">
+                        <button name="get_batch" value="1" class="btn btn-success btn-lg">Get the Next Batch</button>
+                    </div>
+                </form>
+            </div>
+            <?php
+        }
+
+        ?>
 
     </div>
 </main>
