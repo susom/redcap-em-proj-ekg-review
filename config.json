@@ -50,6 +50,31 @@
       "name": "<b>Enable Debug Logging</b>",
       "required": false,
       "type": "checkbox"
+    },
+    {
+      "key": "gcp-service-account-json",
+      "name": "<b>Paste in the contents of the JSON service-account file from GCP</b><br>This should be a valid JSON object",
+      "required": true,
+      "type": "textarea"
+    },
+    {
+      "key": "gcp-bucket-name",
+      "name": "<b>Bucket Name</b><br><i>e.g. qsu-uploads-dev</i>",
+      "required": true,
+      "type": "text"
+    },
+    {
+      "key": "review-form",
+      "name": "<b>Review Instrument</b><br><i>e.g. ekg_review</i>",
+      "required": true,
+      "type": "form-list"
+    },
+    {
+      "key": "batch-size",
+      "name": "<b>Number of records to assign to user per batch</b><br><i>e.g. 20</i>",
+      "required": true,
+      "default": "2",
+      "type": "text"
     }
   ]
 }

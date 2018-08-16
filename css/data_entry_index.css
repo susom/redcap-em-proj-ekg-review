@@ -21,4 +21,4 @@
 #ekg_review_complete-sh-tr, #ekg_review_complete-tr { display: none; }
 
 
-#record_id-tr, #group-tr, #start_time-tr { display: none; }
+#record_id-tr, #group-tr, #start_time-tr, #end_time-tr { display: none; }

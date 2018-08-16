@@ -3,10 +3,27 @@ console.log("Here");
 // Initialize an object for custom functions or data
 var EKGEM = EKGEM || {}
 
-
+EKGEM.removeParam = function(key, sourceURL) {
+    var rtn = sourceURL.split("?")[0],
+        param,
+        params_arr = [],
+        queryString = (sourceURL.indexOf("?") !== -1) ? sourceURL.split("?")[1] : "";
+    if (queryString !== "") {
+        params_arr = queryString.split("&");
+        for (var i = params_arr.length - 1; i >= 0; i -= 1) {
+            param = params_arr[i].split("=")[0];
+            if (param === key) {
+                params_arr.splice(i, 1);
+            }
+        }
+        rtn = rtn + "?" + params_arr.join("&");
+    }
+    return rtn;
+};
 
 
 $('document').ready( function() {
+
     let instructions = $("<div/>")
         .text("These are instructions")
         .insertAfter('#subheader');
@@ -23,28 +40,49 @@ $('document').ready( function() {
 
 
     // Set the form_complete status to be 2
-    $('select[name="ekg_review_complete"]').val(2);
+    let status_select = $('select[name="ekg_review_complete"]');
+    let status_val = status_select.val();
+
+    if (status_val == 2) {
+        // Form is already complete - user should not be editing it again
+        $('body').css("display","none");
+        alert ('This record has already been scored.  Press OK to return to the home page.');
+        window.location = EKGEM.removeParam("id", window.location.href);
+    } else {
+        // Set it to complete so on-save it is fixed
+        status_select.val(2);
+    }
+
 
 
     // Make the center class wider
     $('#center').removeClass("col-sm-8").addClass("col-sm-12").removeClass("col-md-9").addClass("col-md-12");
 
+    // Update the progress meter
     if (EKGEM.progress) {
         console.log (EKGEM.progress);
         let width = EKGEM.progress.width;
         let text = EKGEM.progress.text;
 
-
-        // let p = $('<div/>').addClass('progress');
-        let p2 = $('<div/>');
-        p2.addClass('progress-bar')
+        $('<div/>').addClass('progress-bar')
             .addClass('progress-bar-striped')
             .text(text)
             .attr('style', "width:" + width + "%")
             .wrap("<div class='progress'></div>")
             .parent()
             .insertAfter('#subheader');
-
     }
+
+
+    // Set the start time
+    if (EKGEM.startTime) {
+        let st = $('input[name="start_time"]');
+        if (st.length) {
+            if (st.val() == "") {
+                st.val(EKGEM.startTime);
+            }
+        }
+    }
+
 
 });
