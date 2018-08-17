@@ -1,4 +1,3 @@
-EKGEM = EKGEM || {};
 
 EKGEM.setup = function() {
 

@@ -137,52 +137,33 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-    //function redcap_every_page_top($project_id) {
-    //
-    //    $this->emLog(__FUNCTION__ . " on " . PAGE);
-    //
-    //
-    //}
-
-
     function redcap_data_entry_form_top($project_id, $record = NULL, $instrument, $event_id, $group_id = NULL, $repeat_instance = 1) {
-        if (! $this->isDagUser()) {
-            return;
-        }
+        $review_form = $this->getProjectSetting('review-form');
 
-        // If user in part of a DAG, then we are applying special code:
-        $this->emDebug("Injecting custom css/js");
+        if ($review_form == $instrument && $this->isDagUser()) {
 
-        // Add custom CSS
-        echo "<style>" . file_get_contents($this->getModulePath() . "css/data_entry_index.css") . "</style>";
-        echo "<style>" . file_get_contents($this->getModulePath() . "css/ekg_viewer.css") . "</style>";
+            // We are on the review form - inject!
+            $this->emDebug("Injecting custom css/js");
 
-        // Add custom JS
-        echo "<script type='text/javascript' src='" . $this->getUrl("js/data_entry_index.js") . "'></script>";
-        echo "<script type='text/javascript' src='https://d3js.org/d3.v4.min.js'></script>";
-        echo "<script type='text/javascript' src='" . $this->getUrl("js/ekg_viewer.js") . "'></script>";
+            // Add custom CSS and JS
+            ?>
+                <style><?php echo file_get_contents($this->getModulePath() . "css/data_entry_index.css")?></style>
+                <style><?php echo file_get_contents($this->getModulePath() . "css/ekg_viewer.css")?></style>
 
+                <script type='text/javascript' src='<?php echo $this->getUrl("js/data_entry_index.js") ?>'></script>
+                <script type='text/javascript' src='<?php echo $this->getUrl("js/d3.v4.min.js")?>'></script>
+                <script type='text/javascript' src='<?php echo $this->getUrl("js/ekg_viewer.js")?>'></script>
 
-
-        $contents = file_get_contents($this->getModulePath()."example.csv");
-        $data = csvToArray($contents);
-
-        // Add progress and server start timestamp
-        echo "
-            <script type='text/javascript'>
-                if (typeof EKGEM === 'undefined') EKGEM = {};
-                EKGEM['progress'] = " . json_encode($this->getProgress($project_id,$this->group_id)) . ";
-                EKGEM['startTime'] = " . json_encode(date("Y-m-d H:i:s")) . ";
-                EKGEM['data_url'] = " . json_encode($this->getUrl("file.php") . "&id=" . $record ) . ";
-                EKGEM['userid'] = " . json_encode(USERID) . ";
-                EKGEM['data'] = " . json_encode($data) . ";
+                <script type='text/javascript'>
+                    var EKGEM = EKGEM || {};
+                    EKGEM['progress']   = <?php echo json_encode($this->getProgress($project_id,$this->group_id)) ?>;
+                    EKGEM['startTime']  = <?php echo json_encode(date("Y-m-d H:i:s")) ?>;
+                    EKGEM['dag']        = <?php echo json_encode($this->group_id ) ?>;
+                    EKGEM['userid']     = <?php echo json_encode(USERID) ?>;
+                    EKGEM['data']       = <?php echo json_encode($this->getObject($record)) ?>;
                 </script>
-        ";
-
-
-
-
-
+            <?php
+        }
     }
 
 
@@ -243,7 +224,17 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-
+    /**
+     * On saving, add the completion time (server-side), and redirect to the next record
+     * @param     $project_id
+     * @param     $record
+     * @param     $instrument
+     * @param     $event_id
+     * @param     $group_id
+     * @param     $survey_hash
+     * @param     $response_id
+     * @param int $repeat_instance
+     */
     function redcap_save_record($project_id, $record, $instrument, $event_id, $group_id, $survey_hash, $response_id, $repeat_instance = 1 ) {
         $this->emDebug("Just saved record $record in group $group_id");
 
@@ -265,7 +256,49 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
+    /**
+     * Each redcap record has an object_name - use that to pull the object from GCP and return it as an array
+     * @param $record
+     * @return array|bool   Array of data or false
+     */
+    function getObject($record) {
+        // Use the ID to find the actual file name
+        $q = REDCap::getData('json', array($record), array('object_name', 'ekg_review_complete'));
+        $results = json_decode($q,true);
+        $result = $results[0];
 
+        //if ($result['ekg_review_complete'] == 2) {
+        //    $this->emDebug("The requested record is already complete - no need to re-render");
+        //    return false;
+        //}
+
+        $object_name = $result['object_name'];
+        if (empty($object_name)) {
+            // There is no object
+            $this->emDebug("There is no object_name for record $record");
+            return false;
+        }
+
+        $this->emDebug("Getting bucket file " . $object_name . " for record $record");
+        $contents = $this->getBucketFile($object_name);
+
+        if ($contents === false) {
+            // There was an error
+            $this->emError("There was an error getting " . $object_name . " for record $record");
+            return false;
+        } else {
+            $this->emDebug("Found contents:\n" . substr($result,0,100) . "...");
+            $data = csvToArray($contents);
+            return $data;
+        }
+    }
+
+
+    /**
+     * Get file from google bucket
+     * @param $filename
+     * @return bool|string
+     */
     function getBucketFile($filename) {
 
         # Includes the autoloader for libraries installed with composer
@@ -291,8 +324,8 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         $object = $bucket->object($filename);
         if ($object->exists()) {
             $this->emDebug("$filename exists");
-//            $stream = $object->downloadAsStream();
-//            echo $stream->getContents();
+            //$stream = $object->downloadAsStream();
+            //echo $stream->getContents();
             $string = $object->downloadAsString();
             return $string;
         } else {
@@ -302,9 +335,10 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-
-
-
+    /**
+     * Logging Functions
+     * @throws \Exception
+     */
     function emLog() {
         $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
         $emLogger->log($this->PREFIX, func_get_args(), "INFO");

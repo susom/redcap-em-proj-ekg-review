@@ -1,8 +1,8 @@
-console.log("Here");
-
 // Initialize an object for custom functions or data
-var EKGEM = EKGEM || {}
+var EKGEM = EKGEM || {};
 
+
+// A helper function for redirects to remove a query string attribute
 EKGEM.removeParam = function(key, sourceURL) {
     var rtn = sourceURL.split("?")[0],
         param,
@@ -45,61 +45,65 @@ $('document').ready( function() {
     $('button[name="submit-btn-cancel"]').removeAttr('style');
 
 
-    // Set the form_complete status to be 2
-    let status_select = $('select[name="ekg_review_complete"]');
-    let status_val = status_select.val();
+    // If we are in a DAG - we do some additional formatting
+    if (EKGEM.dag) {
+        $('body').addClass("DAG");
 
-    if (status_val == 2) {
-        // Form is already complete - user should not be editing it again
-        $('body').css("display","none");
-        alert ('This record has already been scored.  Press OK to return to the home page.');
-        window.location = EKGEM.removeParam("id", window.location.href);
-    } else {
-        // Set it to complete so on-save it is fixed
-        status_select.val(2);
-    }
+        // Set the form_complete status to be 2
+        let status_select = $('select[name="ekg_review_complete"]');
+        let status_val = status_select.val();
+        if (+status_val === 2) {
+            // Form is already complete - user should not be editing it again
+            $('body').css("display","none");
+            alert ('This record has already been scored.  Press OK to return to the home page.');
+            window.location = EKGEM.removeParam("id", window.location.href);
+        } else {
+            // Set it to complete so on-save it is fixed
+            status_select.val(2);
+        }
 
+        // Make the center class wider
+        $('#center').removeClass("col-sm-8").addClass("col-sm-12").removeClass("col-md-9").addClass("col-md-12");
 
+        // Update the progress meter
+        if (EKGEM.progress) {
+            console.log (EKGEM.progress);
+            let width = EKGEM.progress.width;
+            let text = EKGEM.progress.text;
 
-    // Make the center class wider
-    $('#center').removeClass("col-sm-8").addClass("col-sm-12").removeClass("col-md-9").addClass("col-md-12");
+            $('<div/>').addClass('progress-bar')
+                .addClass('progress-bar-striped')
+                .text(text)
+                .attr('style', "width:" + width + "%")
+                .wrap("<div class='progress'></div>")
+                .parent()
+                .insertAfter('#subheader');
+        }
 
-
-    // Update the progress meter
-    if (EKGEM.progress) {
-        console.log (EKGEM.progress);
-        let width = EKGEM.progress.width;
-        let text = EKGEM.progress.text;
-
-        $('<div/>').addClass('progress-bar')
-            .addClass('progress-bar-striped')
-            .text(text)
-            .attr('style', "width:" + width + "%")
-            .wrap("<div class='progress'></div>")
-            .parent()
-            .insertAfter('#subheader');
-    }
-
-
-    // Set the start time
-    if (EKGEM.startTime) {
-        let st = $('input[name="start_time"]');
-        if (st.length) {
-            if (st.val() == "") {
-                st.val(EKGEM.startTime);
+        // Set the start time
+        if (EKGEM.startTime) {
+            let st = $('input[name="start_time"]');
+            if (st.length) {
+                if (st.val() == "") {
+                    st.val(EKGEM.startTime);
+                }
             }
         }
+
+        // Set reviewer
+        if (EKGEM.userid) {
+            $('input[name="reviewer"]').val(EKGEM.userid);
+        }
+
+     } //DAG
+
+
+    // Start the d3 viewer
+    if (EKGEM.data === false) {
+        // There was no data
+        alert("There was a problem loading the data for this record");
+    } else {
+        EKGEM.setup();
     }
-
-    // Set reviewer
-    if (EKGEM.userid) {
-        $('input[name="reviewer"]').val(EKGEM.userid);
-    }
-
-
-    console.log("Starting setup");
-    EKGEM.setup();
-
-
 
 });
