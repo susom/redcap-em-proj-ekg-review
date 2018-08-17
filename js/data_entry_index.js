@@ -24,10 +24,16 @@ EKGEM.removeParam = function(key, sourceURL) {
 
 $('document').ready( function() {
 
-    let instructions = $("<div/>")
-        .text("These are instructions")
-        .insertAfter('#subheader');
-    //.after(instructions);
+    // let instructions = $("<div/>")
+    //     .text("These are instructions")
+    //     .insertAfter('#subheader');
+
+    $("<svg width='960' height='500'/>").insertAfter('#subheader');
+
+        // .attr('width', '960px')
+        // .attr('height', '500px');
+        // .css('width',"960px")
+        // .css('height', "500px");
 
     // Allow width to be wider
     $('#form>div').filter(":first").removeAttr('style');
@@ -58,6 +64,7 @@ $('document').ready( function() {
     // Make the center class wider
     $('#center').removeClass("col-sm-8").addClass("col-sm-12").removeClass("col-md-9").addClass("col-md-12");
 
+
     // Update the progress meter
     if (EKGEM.progress) {
         console.log (EKGEM.progress);
@@ -83,6 +90,16 @@ $('document').ready( function() {
             }
         }
     }
+
+    // Set reviewer
+    if (EKGEM.userid) {
+        $('input[name="reviewer"]').val(EKGEM.userid);
+    }
+
+
+    console.log("Starting setup");
+    EKGEM.setup();
+
 
 
 });

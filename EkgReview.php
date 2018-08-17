@@ -117,7 +117,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Redirect to 'record_home' from other REDCap locations
         if (PAGE == "DataEntry/record_home.php"
             //PAGE == "index.php" ||
-            //PAGE == "ProjectSetup/index.php" ||
+            //|| PAGE == "ProjectSetup/index.php"
             || ( PAGE == "DataEntry/index.php"
                  && empty($_GET["id"])
                  && $_SERVER['REQUEST_METHOD'] === 'GET'
@@ -137,34 +137,55 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-    function redcap_every_page_top($project_id) {
+    //function redcap_every_page_top($project_id) {
+    //
+    //    $this->emLog(__FUNCTION__ . " on " . PAGE);
+    //
+    //
+    //}
 
-        $this->emLog(__FUNCTION__ . " on " . PAGE);
 
+    function redcap_data_entry_form_top($project_id, $record = NULL, $instrument, $event_id, $group_id = NULL, $repeat_instance = 1) {
         if (! $this->isDagUser()) {
             return;
         }
 
         // If user in part of a DAG, then we are applying special code:
-        if (PAGE == "DataEntry/index.php") {
-            $this->emDebug("Injecting custom css/js");
+        $this->emDebug("Injecting custom css/js");
 
-            // Add custom CSS
-            echo "<style>" . file_get_contents($this->getModulePath() . "css/data_entry_index.css") . "</style>";
+        // Add custom CSS
+        echo "<style>" . file_get_contents($this->getModulePath() . "css/data_entry_index.css") . "</style>";
+        echo "<style>" . file_get_contents($this->getModulePath() . "css/ekg_viewer.css") . "</style>";
 
-            // Add custom JS
-            echo "<script type='text/javascript' src='" . $this->getUrl("js/data_entry_index.js") . "'></script>";
+        // Add custom JS
+        echo "<script type='text/javascript' src='" . $this->getUrl("js/data_entry_index.js") . "'></script>";
+        echo "<script type='text/javascript' src='https://d3js.org/d3.v4.min.js'></script>";
+        echo "<script type='text/javascript' src='" . $this->getUrl("js/ekg_viewer.js") . "'></script>";
 
-            // Add progress and server start timestamp
-            echo "
-                <script type='text/javascript'>
-                    if (typeof EKGEM === 'undefined') EKGEM = {};
-                    EKGEM['progress'] = " . json_encode($this->getProgress($project_id,$this->group_id)) . ";
-                    EKGEM['startTime'] = " . json_encode(date("Y-m-d H:i:s")) . ";
-                </script>";
-        }
+
+
+        $contents = file_get_contents($this->getModulePath()."example.csv");
+        $data = csvToArray($contents);
+
+        // Add progress and server start timestamp
+        echo "
+            <script type='text/javascript'>
+                if (typeof EKGEM === 'undefined') EKGEM = {};
+                EKGEM['progress'] = " . json_encode($this->getProgress($project_id,$this->group_id)) . ";
+                EKGEM['startTime'] = " . json_encode(date("Y-m-d H:i:s")) . ";
+                EKGEM['data_url'] = " . json_encode($this->getUrl("file.php") . "&id=" . $record ) . ";
+                EKGEM['userid'] = " . json_encode(USERID) . ";
+                EKGEM['data'] = " . json_encode($data) . ";
+                </script>
+        ";
+
+
+
+
 
     }
+
+
 
     /**
      * Get progress array for project and group

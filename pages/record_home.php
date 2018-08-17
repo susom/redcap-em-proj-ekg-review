@@ -91,30 +91,5 @@ $unassigned = $this->getUnassignedRecords();
 
 
 <style>
-
-    .navbar {margin-bottom: 0px; }
-
-    .logo {
-        width: 80%;
-        height: 80px;
-        /*display: inline-block;*/
-        background: url("<?php echo $this->getUrl("assets/logo.png")?>");
-        background-repeat: no-repeat;
-        background-size: contain;
-    }
-
+    .navbar {margin-bottom: 0; }
 </style>
-
-
-<script>
-    $('.return-to-redcap').bind('click',function() {
-        window.location('https://')
-    })
-
-    $('#score').bind('click', function() {
-
-    });
-
-
-
-</script>

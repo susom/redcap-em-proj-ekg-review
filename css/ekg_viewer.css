@@ -1,0 +1,36 @@
+.tick line{
+    stroke: red;
+    opacity: 0.3;
+}
+
+.line {
+    fill: none;
+    stroke: #3f75a2;
+    stroke-width: 1.5px;
+}
+
+.zoom {
+    cursor: move;
+    fill: none;
+    pointer-events: all;
+}
+
+.btn {
+    background-color: DodgerBlue; /* Blue background */
+    border: none; /* Remove borders */
+    color: white; /* White text */
+
+    font-size: 16px; /* Set a font size */
+    cursor: pointer; /* Mouse pointer on hover */
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+    background-color: RoyalBlue;
+}
+
+.btn:disabled,
+.btn[disabled]{
+    background-color: #cccccc;
+    color: #666666;
+}
