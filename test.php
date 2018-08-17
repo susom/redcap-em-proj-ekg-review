@@ -2,16 +2,15 @@
 /** @var \Stanford\EkgReview\EkgReview $module */
 
 
+echo "TEST";
+exit();
 
 
 echo "<pre>";
 
 echo "File Path: " . $module->getUrl("file.php", false, false);
 
-
 //$module->getBucketFile("adjudication/test.txt");
-
-
 
 
 # Includes the autoloader for libraries installed with composer
