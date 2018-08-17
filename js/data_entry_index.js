@@ -39,7 +39,7 @@ $('document').ready( function() {
     $('#form>div').filter(":first").removeAttr('style');
 
     // Remove other save options
-    $('#submit-btn-saverecord').text("Save and Next");
+    $('#submit-btn-saverecord').text("Save and Next").removeAttr('style');
 
     // Bring cancel button up
     $('button[name="submit-btn-cancel"]').removeAttr('style');

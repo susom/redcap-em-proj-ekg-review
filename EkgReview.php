@@ -65,6 +65,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         return $unassigned;
     }
 
+
     function redcap_every_page_before_render($project_id) {
         // We are going to prevent certain pages if a user is in a DAG
 
@@ -198,6 +199,22 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
+    function redirect($url) {
+        // If contents already output, use javascript to redirect instead
+        if (headers_sent())
+        {
+            echo "<script type='text/javascript'>window.location.href=\"$url\";</script>";
+        }
+        // Redirect using PHP
+        else
+        {
+            header("Location: $url");
+        }
+
+    }
+
+
+
     /**
      * Redirect to next record (be sure to call exitAfterHook() when calling...
      * @param $project_id
@@ -211,7 +228,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         if (empty($next_records)) {
             // There are none left - lets goto the homepage
             $url = APP_PATH_WEBROOT . "DataEntry/record_home.php?pid=" . $project_id . "&msg=" . htmlentities("All Records Complete");
-            redirect($url);
+            $this->redirect($url);
         } else {
             $next_record = key($next_records);
             $form = $this->getProjectSetting( "review-form");
@@ -219,7 +236,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $this->emDebug("Next record is $next_record");
             $url = APP_PATH_WEBROOT . "DataEntry/index.php?pid=" . $project_id . "&page=" . $form . "&id=" . htmlentities($next_record);
             $this->emDebug("Redirect to $url");
-            redirect($url);
+            $this->redirect($url);
         }
     }
 

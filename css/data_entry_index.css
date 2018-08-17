@@ -24,5 +24,7 @@
 /*Hide the Form Status stuff*/
 #ekg_review_complete-sh-tr, #ekg_review_complete-tr { display: none; }
 
+#__DELETEBUTTONS__-tr, #__LOCKRECORD__-tr { display:none; }
+
 
 #record_id-tr, #reviewer-tr, #start_time-tr, #end_time-tr, #object_name-tr { display: none; }
