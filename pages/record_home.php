@@ -12,6 +12,8 @@ $percent = $progress['percent'];
 
 $unassigned = $this->getUnassignedRecords();
 
+
+
 //$this->emDebug($progress);
 
 ?>
@@ -65,6 +67,7 @@ $unassigned = $this->getUnassignedRecords();
         } else {
             // There are unassigned records remaining
             ?>
+
             <div class="alert alert-success">
                 <p class="text-center">
                     Additional EKGs need to be reviewed.
@@ -85,6 +88,24 @@ $unassigned = $this->getUnassignedRecords();
 
         ?>
 
+        <br/>
+
+        <p>Your Progress <span class="progress-detail"><?php echo $progress['complete'] . " of " . $progress['total'] . " records in your bin are complete" ?></span></p>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-black" style="width:<?php echo $percent ?>%">
+                <?php echo $progress['percent'] ?>%
+            </div>
+        </div>
+
+
+        <p>Overall Progress <span class="progress-detail"><?php echo $this->totalComplete . " of " . $this->totalCount . " records are complete" ?></span></p>
+        <div class="progress">
+            <div class="progress-bar progress-bar-success progress-bar-striped progress-black" style="width:<?php echo $this->totalPercent ?>%">
+                <?php echo $this->totalPercent ?>%
+            </div>
+        </div>
+
+
     </div>
 </main>
 
@@ -92,4 +113,5 @@ $unassigned = $this->getUnassignedRecords();
 
 <style>
     .navbar {margin-bottom: 0; }
+    .progress-detail {font-size: 10pt; color: #666}
 </style>
