@@ -39,7 +39,7 @@ EKGEM.setup = function() {
             return  d;
     });
 
-    var brush = d3.brushX()
+    EKGEM.brush = brush = d3.brushX()
         .extent([[0, 0], [width, height2]])
         .on("brush end", function() {
             if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
@@ -48,6 +48,18 @@ EKGEM.setup = function() {
             var s = d3.event.selection || x2.range();
             if((s[1] - s[0]) > 100){
                 s[1] = s[0] + 100;
+            }
+
+            if(s[0] <= 0){
+                $("#buttonMoveLeft").addClass('disabled'); // = true;
+            } else {
+                $("#buttonMoveLeft").removeClass('disabled'); // = false;
+            }
+
+            if(s[1] < 900){
+                $("#buttonMoveRight").removeClass('disabled'); // = false;
+            } else {
+                $("#buttonMoveRight").addClass('disabled'); // = true;
             }
 
             x.domain(s.map(x2.invert, x2));
@@ -189,29 +201,45 @@ EKGEM.setup = function() {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     //.call(zoom);
 
+    // Now that the page is rendered, lets scroll to the top of the EKG
+    $('html, body').animate({
+        scrollTop: ($('svg').offset().top)
+    },500);
+
+    $('body').on('keypress', function(args) {
+        // console.log(args);
+        if (args.keyCode === 60 || args.keyCode === 44) {
+            $('#buttonMoveLeft').click();
+            return false;
+        } else if (args.keyCode === 46 || args.keyCode == 62) {
+            $('#buttonMoveRight').click();
+            return false;
+        }
+    });
+
 };
 
 
 
-function brushed() {
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
-    //console.log("brushed");
-    xaxisGridLineOpacity();
-    var s = d3.event.selection || x2.range();
-    if((s[1] - s[0]) > 100){
-        s[1] = s[0] + 100;
-    }
-
-    x.domain(s.map(x2.invert, x2));
-    Line_chart.select(".line").attr("d", line);
-    focus.select(".axis--x").call(xAxis);
-    svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
-        .scale(width / (s[1] - s[0]))
-        .translate(-s[0], 0));
-}
+// function brushed() {
+//     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+//     //console.log("brushed");
+//     xaxisGridLineOpacity();
+//     var s = d3.event.selection || x2.range();
+//     if((s[1] - s[0]) > 100){
+//         s[1] = s[0] + 100;
+//     }
+//
+//     x.domain(s.map(x2.invert, x2));
+//     Line_chart.select(".line").attr("d", line);
+//     focus.select(".axis--x").call(xAxis);
+//     svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+//         .scale(width / (s[1] - s[0]))
+//         .translate(-s[0], 0));
+// }
 
 function moveBrushLeft(){
-    console.log("moveBrushLeft");
+    // console.log("moveBrushLeft");
     var s = d3.brushSelection(d3.select(".brush").node());
     var width = s[1] - s[0];
     if(s[0] - width <= 0){
@@ -222,7 +250,7 @@ function moveBrushLeft(){
         s[1] = s[1] - width;
     }
 
-    d3.select(".brush").call(brush.move, [s[0], s[1]]);
+    d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
 }
 
 function moveBrushRight(){
@@ -238,19 +266,19 @@ function moveBrushRight(){
 
     }
 
-    d3.select(".brush").call(brush.move, [s[0], s[1]]);
+    d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
 }
 
-function zoomed() {
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
-    //console.log("zoomed");
-    // xaxisGridLineOpacity();
-    var t = d3.event.transform;
-    x.domain(t.rescaleX(x2).domain());
-    Line_chart.select(".line").attr("d", line);
-    focus.select(".axis--x").call(xAxis);
-    context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
-}
+// function zoomed() {
+//     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+//     //console.log("zoomed");
+//     // xaxisGridLineOpacity();
+//     var t = d3.event.transform;
+//     x.domain(t.rescaleX(x2).domain());
+//     Line_chart.select(".line").attr("d", line);
+//     focus.select(".axis--x").call(xAxis);
+//     context.select(".brush").call(EKGEM.brush.move, x.range().map(t.invertX, t));
+// }
 
 function xaxisGridLineOpacity(){
     var xAxidGrids = d3.selectAll(".axis--x .tick");
@@ -277,3 +305,4 @@ function yaxisGridLineOpacity(){
     });
 
 }
+

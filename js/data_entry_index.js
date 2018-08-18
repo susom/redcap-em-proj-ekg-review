@@ -28,12 +28,19 @@ $('document').ready( function() {
     //     .text("These are instructions")
     //     .insertAfter('#subheader');
 
-    $("<svg width='960' height='500'/>").insertAfter('#subheader');
+    let svg = $("<svg width='960' height='500'/>").insertAfter('#subheader');
 
-        // .attr('width', '960px')
-        // .attr('height', '500px');
-        // .css('width',"960px")
-        // .css('height', "500px");
+
+    let btnL = $('<div id="buttonMoveLeft" class="btn btn-primary" title="Move Left" />')
+        .bind('click', function() { moveBrushLeft() })
+        .append('<i class="fa fa-arrow-left"></i>');
+
+    let btnR = $('<div id="buttonMoveRight" class="btn btn-primary" title="Move Right" />')
+        .bind('click', function() { moveBrushRight() })
+        .append('<i class="fa fa-arrow-right"></i>');
+
+    $("<div id='moveButtons'/>").append(btnL).append(btnR).insertAfter(svg);
+
 
     // Allow width to be wider
     $('#form>div').filter(":first").removeAttr('style');
@@ -77,7 +84,8 @@ $('document').ready( function() {
                 .attr('style', "width:" + width + "%")
                 .wrap("<div class='progress'></div>")
                 .parent()
-                .insertAfter('#subheader');
+                .insertAfter('#questiontable');
+                // .insertAfter('#subheader');
         }
 
         // Set the start time

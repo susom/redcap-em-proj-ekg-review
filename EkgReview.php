@@ -14,6 +14,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 {
 
     public $group_id = null;
+    public $totalCount, $totalComplete, $totalPercent;
 
     function __construct($project_id = null)
     {
@@ -53,14 +54,22 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function getUnassignedRecords() {
         // Get all records that are not assigned to a DAG
-        $logic = "[ekg_review_complete] <> '2'";
+        //$logic = "[ekg_review_complete] <> '2'";
+        $logic = NULL;
         $result = REDCap::getData('json', null, array('record_id', 'ekg_review_complete'), null, null, false, true, false, $logic);
         $records = json_decode($result,true);
+
         $unassigned = array();
+        $completed = 0;
 
         foreach ($records as $record) {
             if (empty($record['redcap_data_access_group'])) $unassigned[] = $record;
+            if ($record['ekg_review_complete'] == 2) $completed++;
         }
+
+        $this->totalCount = count($records);
+        $this->totalComplete = $completed;
+        $this->totalPercent = $this->totalCount == 0 ? 100 : round($this->totalComplete / $this->totalCount * 100, 1);
 
         return $unassigned;
     }
@@ -118,7 +127,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Redirect to 'record_home' from other REDCap locations
         if (PAGE == "DataEntry/record_home.php"
             //PAGE == "index.php" ||
-            //|| PAGE == "ProjectSetup/index.php"
+            || PAGE == "ProjectSetup/index.php"
             || ( PAGE == "DataEntry/index.php"
                  && empty($_GET["id"])
                  && $_SERVER['REQUEST_METHOD'] === 'GET'
