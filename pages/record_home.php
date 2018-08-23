@@ -18,15 +18,27 @@ $unassigned = $this->getUnassignedRecords();
 
 ?>
 
-<nav class="navbar navbar-inverse">
+<nav class="navbar navbar-dark bg-dark navbar-inverse">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">AHS EKG Review</a>
+            <a class="navbar-brand" href="#">EKG Review</a>
         </div>
         <ul class="nav navbar-nav navbar-right">
-            <li><a href="#"><span class="glyphicon glyphicon-repeat"></span> <?php echo $progress['text'] ?></a></li>
-            <li><a href="#"><span class="glyphicon glyphicon-user"></span> <?php echo USERID ?></a></li>
-            <li><a class="return-to-redcap" href="/index.php?action=myprojects"><span class="glyphicon glyphicon-log-in"></span> My Projects</a></li>
+            <li class="nav-item">
+                <a class='nav-link' href="#">
+                    <?php echo $progress['text'] ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-user"></i> <?php echo USERID ?>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link return-to-redcap" href="/index.php?action=myprojects">
+                    <i class="far fa-list-alt"></i>  My Projects
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
@@ -40,7 +52,7 @@ $unassigned = $this->getUnassignedRecords();
             <img src="<?php echo $this->getUrl("assets/logo.png") ?>" />
         </div>
         <br>
-        <p class="text-center">Thank you for your assistance with the AHS EKG Scoring.
+        <p class="text-center">Thank you for your assistance with the EKG Scoring.
         </p>
 
         <?php
@@ -66,24 +78,43 @@ $unassigned = $this->getUnassignedRecords();
             <?php
         } else {
             // There are unassigned records remaining
-            ?>
 
-            <div class="alert alert-success">
-                <p class="text-center">
-                    Additional EKGs need to be reviewed.
-                </p>
-                <p class="text-center">
-                    Please press the button below to claim the
-                    the next batch of records.
-                </p>
-                <br/>
-                <form method="POST">
-                    <div class="text-center">
-                        <button name="get_batch" value="1" class="btn btn-success btn-lg">Get the Next Batch</button>
-                    </div>
-                </form>
-            </div>
-            <?php
+            $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
+
+            if ($max_number_per_dag == 0) {
+                // unlimited!
+            } elseif ($progress['complete'] < $max_number_per_dag) {
+                // Still some available
+                ?>
+
+                <div class="alert alert-success">
+                    <p class="text-center">
+                        Additional EKGs need to be reviewed.
+                    </p>
+                    <p class="text-center">
+                        Please press the button below to claim the
+                        the next batch of records.
+                    </p>
+                    <br/>
+                    <form method="POST">
+                        <div class="text-center">
+                            <button name="get_batch" value="1" class="btn btn-success btn-lg">Get the Next Batch</button>
+                        </div>
+                    </form>
+                </div>
+                <?php
+            } else {
+                // Dag has exceeded max allowed
+                ?>
+
+                <div class="alert alert-success">
+                    <p class="text-center">
+                        Thank you for reviewing the maximum number of EKGs permitted by your group.
+                    </p>
+                </div>
+
+                <?php
+            }
         }
 
         ?>
@@ -113,5 +144,6 @@ $unassigned = $this->getUnassignedRecords();
 
 <style>
     .navbar {margin-bottom: 0; }
+    .nav-item { display: inline-block;}
     .progress-detail {font-size: 10pt; color: #666}
 </style>

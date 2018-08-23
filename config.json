@@ -42,6 +42,12 @@
       "name": "<b>Enable Debug Logging (system-wide)</b>",
       "required": false,
       "type": "checkbox"
+    },
+    {
+      "key": "is_dev",
+      "name": "<b>Use example CSV (dev mode)</b>",
+      "required": false,
+      "type": "checkbox"
     }
   ],
 
@@ -75,6 +81,13 @@
       "name": "<b>Number of records to assign to user per batch</b><br><i>e.g. 20</i>",
       "required": true,
       "default": "2",
+      "type": "text"
+    },
+    {
+      "key": "max-number-per-dag",
+      "name": "<b>Maximum number of records one DAG/reviewer can review</b><br>Prevents the 'add another batch' feature once this is exceeded, use 0 for unlimited</i>",
+      "required": true,
+      "default": "0",
       "type": "text"
     }
   ]

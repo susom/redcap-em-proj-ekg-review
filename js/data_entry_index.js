@@ -24,11 +24,42 @@ EKGEM.removeParam = function(key, sourceURL) {
 
 $('document').ready( function() {
 
-    // let instructions = $("<div/>")
-    //     .text("These are instructions")
-    //     .insertAfter('#subheader');
 
-    let svg = $("<svg width='960' height='500'/>").insertAfter('#subheader');
+    // Adjust for margins and scaling factor (estimated margin + scaling)
+    // console.log("Document Width", $(document).width());
+    // console.log("svg width", docWidth);
+
+    // if (docWidth < 1200) {
+    //     p = { "width": 900, "brushWidth": 150, "maxWidth": 150 }
+    // } else if (docWidth < 1500) {
+    //     p = { "width": 1200, "brushWidth": 200, "maxWidth": 200 }
+    // } else if (docWidth < 1800) {
+    //     p = { "width": 1500, "brushWidth": 250, "maxWidth": 250 }
+    // }
+    // EKGEM.width             = 900; // 900
+    // EKGEM.defaultBrushWidth = 150; // 150
+    // EKGEM.maxWidth          = 150; // 150
+    // Ratio of 1/6 = 30 seconds.  //sec width ratio of 3 for 1 min.
+
+    docWidth = Math.max(320, $(document).width() - 80) * 0.83;
+    unit = min(Math.floor(docWidth / 5), 380);
+    // console.log("Unit: " + unit);
+    p = { "width" : 6*unit, "brushWidth": unit, "maxWidth": unit};
+    // console.log("After", p);
+
+    // Get Last Width and keep it for the next EKG if set
+    lastWidth = getCookie("ekg_zoom_width");
+    // console.log("lastWidth", lastWidth);
+    if(lastWidth.length) p.brushWidth = min(p.brushWidth,lastWidth);
+
+    EKGEM.width             = p.width;
+    EKGEM.defaultBrushWidth = p.brushWidth;
+    EKGEM.maxWidth          = p.maxWidth;
+    EKGEM.step              = 1;
+    EKGEM.slideDelay        = 50;
+
+    // let svg = $("<svg width='" + EKGEM.width + 60 + "' height='500'/>").insertAfter('#subheader');
+    let svg = $("<svg width='" + (EKGEM.width + 60) + "' height='500'/>").insertAfter('#subheader');
 
 
     let btnL = $('<div id="buttonMoveLeft" class="btn btn-primary" title="Move Left" />')
@@ -39,14 +70,30 @@ $('document').ready( function() {
         .bind('click', function() { moveBrushRight() })
         .append('<i class="fa fa-arrow-right"></i>');
 
-    $("<div id='moveButtons'/>").append(btnL).append(btnR).insertAfter(svg);
+    let slideL = $('<div id="buttonSlideLeft" class="btn btn-primary btn-slide" title="Slide Left" />')
+        .bind('mousedown', function() { startSlide("left") })
+        .bind('mouseup', function() { stopSlide() })
+        .append('<i class="fa fa-arrow-left"></i>');
+
+    let slideR = $('<div id="buttonSlideRight" class="btn btn-primary btn-slide" title="Slide Right" />')
+        .bind('mousedown', function() { startSlide("right") })
+        .bind('mouseup', function() { stopSlide() })
+        .append('<i class="fa fa-arrow-right"></i>');
+
+
+    $("<div id='moveButtons'/>")
+        .append(slideL)
+        .append(btnL)
+        .append(btnR)
+        .append(slideR)
+        .insertAfter(svg);
 
 
     // Allow width to be wider
     $('#form>div').filter(":first").removeAttr('style');
 
     // Remove other save options
-    $('#submit-btn-saverecord').text("Save and Next").removeAttr('style');
+    $('#submit-btn-saverecord').text("Finalize and Next").removeAttr('style');
 
     // Bring cancel button up
     $('button[name="submit-btn-cancel"]').removeAttr('style');
@@ -74,7 +121,7 @@ $('document').ready( function() {
 
         // Update the progress meter
         if (EKGEM.progress) {
-            console.log (EKGEM.progress);
+            //console.log (EKGEM.progress);
             let width = EKGEM.progress.width;
             let text = EKGEM.progress.text;
 
@@ -85,7 +132,6 @@ $('document').ready( function() {
                 .wrap("<div class='progress'></div>")
                 .parent()
                 .insertAfter('#questiontable');
-                // .insertAfter('#subheader');
         }
 
         // Set the start time

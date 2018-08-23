@@ -15,14 +15,16 @@ EKGEM.setup = function() {
 
     var xAxis = d3.axisBottom(x).tickSize(-height).ticks(d3.timeMillisecond.every(200));
 
-    xAxis.tickFormat(function(d, i) {
-        var tickerFormat = d3.timeFormat("%M:%S");
-        var timeFormat = d3.timeFormat("%f");
-        var milliSecondTime = timeFormat(d);
+    xAxis.tickFormat(
+        function(d, i) {
+            var tickerFormat = d3.timeFormat("%M:%S");
+            var timeFormat = d3.timeFormat("%f");
+            var milliSecondTime = timeFormat(d);
 
-        if(milliSecondTime === '000000')
-            return  tickerFormat(d);
-    });
+            if(milliSecondTime === '000000')
+                return  tickerFormat(d);
+        }
+    );
 
 
     // Array where to add y axis ticks
@@ -34,10 +36,7 @@ EKGEM.setup = function() {
     var xAxis2 = d3.axisBottom(x2).tickFormat(d3.timeFormat("%M:%S")),
         yAxis = d3.axisLeft(y).tickSize(-width).tickValues(yAxisTicks);
 
-    yAxis.tickFormat(function(d, i) {
-        if((d*10)%1 === 0)
-            return  d;
-    });
+    yAxis.tickFormat(function(d, i) { if((d*10)%1 === 0) return  d; });
 
     EKGEM.brush = brush = d3.brushX()
         .extent([[0, 0], [width, height2]])
@@ -46,8 +45,8 @@ EKGEM.setup = function() {
             //console.log("brushed");
             xaxisGridLineOpacity();
             var s = d3.event.selection || x2.range();
-            if((s[1] - s[0]) > 100){
-                s[1] = s[0] + 100;
+            if((s[1] - s[0]) > EKGEM.maxWidth){
+                s[1] = s[0] + EKGEM.maxWidth;
             }
 
             if(s[0] <= 0){
@@ -56,7 +55,7 @@ EKGEM.setup = function() {
                 $("#buttonMoveLeft").removeClass('disabled'); // = false;
             }
 
-            if(s[1] < 900){
+            if(s[1] < EKGEM.width){
                 $("#buttonMoveRight").removeClass('disabled'); // = false;
             } else {
                 $("#buttonMoveRight").addClass('disabled'); // = true;
@@ -68,6 +67,9 @@ EKGEM.setup = function() {
             svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
                 .scale(width / (s[1] - s[0]))
                 .translate(-s[0], 0));
+
+            setCookie("ekg_zoom_width", s[1]-s[0], 30);
+            // console.log("Width: ", width,s[1], s[0], s[1]-s[0]);
         });
 
     var zoom = d3.zoom()
@@ -188,18 +190,17 @@ EKGEM.setup = function() {
         .attr("transform", "translate(0," + height2 + ")")
         .call(xAxis2);
 
+    // Set default width
     context.append("g")
         .attr("class", "brush")
         .call(brush)
-        .call(brush.move, [0,50]);
-    //.call(brush.move, x.range());
+        .call(brush.move, [0,EKGEM.defaultBrushWidth]);
 
     svg.append("rect")
         .attr("class", "zoom")
         .attr("width", width)
         .attr("height", height)
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    //.call(zoom);
 
     // Now that the page is rendered, lets scroll to the top of the EKG
     $('html, body').animate({
@@ -257,17 +258,93 @@ function moveBrushRight(){
     //console.log("moveBrushRight");
     var s = d3.brushSelection(d3.select(".brush").node());
     var width = s[1] - s[0];
-    if(s[1] + width < 900){
+    if(s[1] + width < EKGEM.width){
         s[0] = s[0] + width;
         s[1] = s[1] + width;
     }else{
-        s[1] = 900;
+        s[1] = EKGEM.width;
         s[0] = s[1] - width;
-
     }
-
     d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
 }
+
+function startSlide(direction) {
+    // console.log(direction);
+    EKGEM.sliding = direction;
+    EKGEM.interval = setInterval(function() {slide();}, EKGEM.slideDelay);
+    // slide();
+}
+
+function stopSlide(){
+    // console.log("Stop Slide");
+    EKGEM.sliding == false;
+    clearInterval(EKGEM.interval);
+}
+
+function slide(){
+    // console.log("slide", EKGEM.sliding);
+    if (EKGEM.sliding == "left") {
+        // console.log("moveBrushLeft");
+        var s = d3.brushSelection(d3.select(".brush").node());
+        var width = s[1] - s[0];
+        var newStart = Math.max(0, s[0] - EKGEM.step);
+        s[0] = newStart;
+        s[1] = newStart + width;
+        d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
+    } else if (EKGEM.sliding == "right") {
+        var s = d3.brushSelection(d3.select(".brush").node());
+        var width = s[1] - s[0];
+
+        var newStart = s[0]+EKGEM.step;
+        s[0] = newStart;
+        s[1] = newStart+width;
+
+        if(s[1] > EKGEM.width){
+            s[1] = EKGEM.width;
+            s[0] = EKGEM.width - width;
+        }
+        // console.log("About to set interval");
+        d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
+        // if (EKGEM.interval !== false) EKGEM.interval(function() {slide();}, 100);
+    }
+}
+
+
+function slideLeft(){
+    if (EKGEM.sliding) {
+        // console.log("moveBrushLeft");
+        var s = d3.brushSelection(d3.select(".brush").node());
+        var width = s[1] - s[0];
+        var newStart = Math.max(0, s[0] - EKGEM.step);
+        s[0] = newStart;
+        s[1] = newStart + width;
+        d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
+        setInterval("slideLeft", 100);
+    }
+}
+
+function slideRight(){
+    if (EKGEM.sliding) {
+        //console.log("moveBrushRight");
+        var s = d3.brushSelection(d3.select(".brush").node());
+        var width = s[1] - s[0];
+
+        var newStart = s[0]+EKGEM.step;
+        s[0] = newStart;
+        s[1] = newStart+width;
+
+        if(s[1] > EKGEM.width){
+            s[1] = EKGEM.width;
+            s[0] = EKGEM.width - width;
+        }
+        d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
+        setInterval("slideRight", 100);
+    }
+}
+
+
+
+
 
 // function zoomed() {
 //     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush

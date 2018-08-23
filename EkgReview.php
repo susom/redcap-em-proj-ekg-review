@@ -327,6 +327,11 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function getBucketFile($filename) {
 
+        # If Dev, return localhost
+        if ($this->getSystemSetting('is_dev') == 1) {
+            return file_get_contents($this->getModulePath() . "/examples/example.csv");
+        }
+
         # Includes the autoloader for libraries installed with composer
         require $this->getModulePath() . 'vendor/autoload.php';
 
