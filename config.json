@@ -29,7 +29,7 @@
     ],
     "project": [
       {
-        "name": "EKG Review Test",
+        "name": "EKG Review Bucket",
         "icon": "gear",
         "url": "test.php"
       }

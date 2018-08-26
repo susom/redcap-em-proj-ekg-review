@@ -4,14 +4,6 @@
 
 // Display records in bucket
 
-echo "TEST";
-exit();
-
-
-echo "<pre>";
-
-echo "File Path: " . $module->getUrl("file.php", false, false);
-
 //$module->getBucketFile("adjudication/test.txt");
 
 
@@ -20,6 +12,17 @@ require $module->getModulePath() . 'vendor/autoload.php';
 
 # Imports the Google Cloud client library
 use Google\Cloud\Storage\StorageClient;
+
+
+//
+//echo "TEST";
+//exit();
+//
+//
+//echo "<pre>";
+//
+//echo "File Path: " . $module->getUrl("file.php", false, false);
+//
 
 # Load KeyFile from Textarea input
 $keyFileJson = $module->getProjectSetting("gcp-service-account-json");
@@ -49,12 +52,18 @@ $storage = new StorageClient([
 
 # The name of a bucket
 //$bucketName = 'qsu-uploads-dev/adjudication';
-$bucketName = 'qsu-uploads-dev';
+$bucketName = $module->getProjectSetting('gcp-bucket-name');
 
 # Get the bucket
 $bucket = $storage->bucket($bucketName);
 
-echo "\nGot Bucket: " . $bucket->name();
+$objects = $bucket->objects();
+
+foreach ($objects as $object) {
+    echo "<br>" . $object->name;
+}
+
+exit();
 
 
 
@@ -70,7 +79,6 @@ $contents = $object->downloadAsString();
 echo $contents;
 file_put_contents("example.csv", $contents);
 
-exit();
 
 
 
