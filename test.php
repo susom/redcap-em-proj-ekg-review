@@ -28,6 +28,8 @@ use Google\Cloud\Storage\StorageClient;
 $keyFileJson = $module->getProjectSetting("gcp-service-account-json");
 $keyFile = json_decode($keyFileJson,true);
 
+//echo $keyFileJson;
+//exit();
 
 
 //# Get the keyfile
@@ -54,15 +56,19 @@ $storage = new StorageClient([
 //$bucketName = 'qsu-uploads-dev/adjudication';
 $bucketName = $module->getProjectSetting('gcp-bucket-name');
 
+//exit($bucketName);
+
+
 # Get the bucket
 $bucket = $storage->bucket($bucketName);
 
-$objects = $bucket->objects();
-
-foreach ($objects as $object) {
-    echo "<br>" . $object->name;
+//$objects = $bucket->objects();
+echo "<h3>$bucketName objects</h3>
+<div class='jumbo'>";
+foreach ($bucket->objects() as $obj) {
+    echo "\n" . $obj->name;
 }
-
+echo "</di";
 exit();
 
 
