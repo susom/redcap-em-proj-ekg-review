@@ -367,6 +367,53 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
 
     /**
+     * Get all files from the google bucket
+     * @return array
+     */
+    function getBucketContents($options = array()) {
+
+        # Includes the autoloader for libraries installed with composer
+        require $this->getModulePath() . 'vendor/autoload.php';
+
+        # Load KeyFile from Textarea input
+        $keyFileJson = $this->getProjectSetting("gcp-service-account-json");
+        $keyFile = json_decode($keyFileJson,true);
+
+        # Instantiates a client
+        $storage = new StorageClient([
+            'keyFile' => $keyFile
+        ]);
+
+        # The name of a bucket
+        $bucketName = $this->getProjectSetting("gcp-bucket-name");
+
+        # Get the bucket
+        $bucket = $storage->bucket($bucketName);
+        $this->emDebug("Got Bucket: " . $bucket->name());
+
+        # Get the file
+        $results = array();
+        foreach ($bucket->objects($options) as $obj) {
+            $results[] = $obj->name();
+        }
+
+        //$object = $bucket->object($filename);
+        //if ($object->exists()) {
+        //    $this->emDebug("$filename exists");
+        //    //$stream = $object->downloadAsStream();
+        //    //echo $stream->getContents();
+        //    $string = $object->downloadAsString();
+        //    return $string;
+        //} else {
+        //    $this->emDebug("$filename does not exist");
+        //    return false;
+        //}
+        return $results;
+    }
+
+
+
+    /**
      * Logging Functions
      * @throws \Exception
      */

@@ -29,7 +29,12 @@
     ],
     "project": [
       {
-        "name": "EKG Review Bucket",
+        "name": "EKG Bucket Contents",
+        "icon": "gear",
+        "url": "bucket_contents.php"
+      },
+      {
+        "name": "Testet",
         "icon": "gear",
         "url": "test.php"
       }

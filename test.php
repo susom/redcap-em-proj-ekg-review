@@ -4,7 +4,12 @@
 
 // Display records in bucket
 
-//$module->getBucketFile("adjudication/test.txt");
+//echo $module->getBucketFile("adjudication/test.txt");
+
+echo "Test";
+
+exit();
+
 
 
 # Includes the autoloader for libraries installed with composer
@@ -56,6 +61,12 @@ $storage = new StorageClient([
 //$bucketName = 'qsu-uploads-dev/adjudication';
 $bucketName = $module->getProjectSetting('gcp-bucket-name');
 
+echo "<pre>";
+
+echo "\n Bucket: " . $bucketName;
+echo "\n Key: " . implode(",", array_keys($keyFile));
+
+
 //exit($bucketName);
 
 
@@ -63,19 +74,25 @@ $bucketName = $module->getProjectSetting('gcp-bucket-name');
 $bucket = $storage->bucket($bucketName);
 
 //$objects = $bucket->objects();
-echo "<h3>$bucketName objects</h3>
-<div class='jumbo'>";
-foreach ($bucket->objects() as $obj) {
-    echo "\n" . $obj->name;
-}
-echo "</di";
-exit();
-
-
 
 $objects = $bucket->objects([
     "prefix" => "adjudication/"
 ]);
+
+//echo "\n Object Count: " . count($objects);
+//exit();
+
+//echo "<h3>$bucketName objects</h3>
+//<div class='jumbo'>";
+foreach ($bucket->objects() as $obj) {
+    echo "\n" . $obj->name;
+}
+//echo "</div>";
+exit();
+
+
+
+
 
 
 $object = $bucket->object("adjudication/a123456783.csv");
