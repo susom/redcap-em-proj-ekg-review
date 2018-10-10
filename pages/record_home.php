@@ -6,43 +6,33 @@ $html = new HtmlPage();
 
 $html->PrintHeaderExt();
 
-
 $progress = $this->getProgress($project_id,$this->group_id);
 $percent = $progress['percent'];
 
-$unassigned = $this->getUnassignedRecords();
-
-
+$this->getUnassignedRecords();
 
 //$this->emDebug($progress);
 
 ?>
 
-<nav class="navbar navbar-dark bg-dark navbar-inverse">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">EKG Review</a>
-        </div>
-        <ul class="nav navbar-nav navbar-right">
-            <li class="nav-item">
-                <a class='nav-link' href="#">
-                    <?php echo $progress['text'] ?>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-user"></i> <?php echo USERID ?>
-                </a>
-            </li>
-            <li>
-                <a class="nav-link return-to-redcap" href="/index.php?action=myprojects">
-                    <i class="far fa-list-alt"></i>  My Projects
-                </a>
-            </li>
-        </ul>
-    </div>
+<nav class="navbar  navbar-dark bg-dark navbar-inverse">
+    <a class="navbar-brand" href="#"><h3>EKG Review</h3></a>
+    <ul class="nav navbar-expand navbar-nav navbar-right navbar-custom">
+        <li class="nav-item active">
+            <a class="nav-link" href="#">
+                <?php echo $progress['text'] ?>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-user"></i> <?php echo USERID ?></a>
+        </li>
+        <li class="nav-item mr-sm-2">
+            <a class="nav-link" href="/index.php?action=myprojects">
+                <i class="far fa-list-alt"></i>  My Projects
+            </a>
+        </li>
+    </ul>
 </nav>
-
 
 <main role="main">
 
@@ -69,11 +59,11 @@ $unassigned = $this->getUnassignedRecords();
                 </div>
             </form>
             <?php
-        } elseif (count($unassigned) == 0) {
-            // There are no more unassigned records
+        } elseif (count($this->availableRecords) == 0) {
+            // There are no more available records
             ?>
             <div class="alert alert-success text-center">
-                Congratulations - all EKGs have been claimed.  Your work is done!
+                <h6 class="text-center">Congratulations - all EKGs have been assigned.  Your work is done!</h6>
             </div>
             <?php
         } else {
@@ -81,20 +71,17 @@ $unassigned = $this->getUnassignedRecords();
 
             $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
 
-            if ($max_number_per_dag == 0) {
-                // unlimited!
-            } elseif ($progress['complete'] < $max_number_per_dag) {
+            if ($max_number_per_dag == 0 || $this->totalCompleteDag < $max_number_per_dag ) {
                 // Still some available
                 ?>
-
                 <div class="alert alert-success">
-                    <p class="text-center">
+                    <h6 class="text-center">
                         Additional EKGs need to be reviewed.
-                    </p>
-                    <p class="text-center">
+                    </h6>
+                    <h6 class="text-center">
                         Please press the button below to claim the
                         the next batch of records.
-                    </p>
+                    </h6>
                     <br/>
                     <form method="POST">
                         <div class="text-center">
@@ -121,15 +108,15 @@ $unassigned = $this->getUnassignedRecords();
 
         <br/>
 
-        <p>Your Progress <span class="progress-detail"><?php echo $progress['complete'] . " of " . $progress['total'] . " records in your bin are complete" ?></span></p>
+        <p><b>Your Progress:</b> <span class="progress-detail"><?php echo $this->totalCompleteDag . " of " . $this->totalCountDag . " records in your bin have been reviewed" ?></span></p>
         <div class="progress">
             <div class="progress-bar progress-bar-striped progress-black" style="width:<?php echo $percent ?>%">
-                <?php echo $progress['percent'] ?>%
+                <?php echo $this->totalPercentDag ?>%
             </div>
         </div>
 
 
-        <p>Overall Progress <span class="progress-detail"><?php echo $this->totalComplete . " of " . $this->totalCount . " records are complete" ?></span></p>
+        <p><b>Overall Progress:</b> <span class="progress-detail"><?php echo $this->totalComplete . " of " . $this->totalCount . " records are complete" ?></span></p>
         <div class="progress">
             <div class="progress-bar progress-bar-success progress-bar-striped progress-black" style="width:<?php echo $this->totalPercent ?>%">
                 <?php echo $this->totalPercent ?>%
@@ -143,7 +130,10 @@ $unassigned = $this->getUnassignedRecords();
 
 
 <style>
+    div.alert {border-color: #666 !important;}
     .navbar {margin-bottom: 0; }
-    .nav-item { display: inline-block;}
-    .progress-detail {font-size: 10pt; color: #666}
+    .navbar-custom>li { display: inline-block; padding-left: 20px;}
+    .navbar-custom .nav-link { font-size: 125%; }
+    /*.progress-detail {font-size: 10pt; color: #666}*/
+    .progress {height: 25px; border: 1px solid #666; font-size: 125%; }
 </style>

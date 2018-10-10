@@ -56,7 +56,7 @@ $('document').ready( function() {
     EKGEM.defaultBrushWidth = p.brushWidth;
     EKGEM.maxWidth          = p.maxWidth;
     EKGEM.step              = 1;
-    EKGEM.slideDelay        = 50;
+    EKGEM.slideDelay        = 50;   // Not sure this is used anymore
 
     // let svg = $("<svg width='" + EKGEM.width + 60 + "' height='500'/>").insertAfter('#subheader');
     let svg = $("<svg width='" + (EKGEM.width + 60) + "' height='500'/>").insertAfter('#subheader');
@@ -64,28 +64,27 @@ $('document').ready( function() {
 
     let btnL = $('<div id="buttonMoveLeft" class="btn btn-primary" title="Move Left" />')
         .bind('click', function() { moveBrushLeft() })
-        .append('<i class="fa fa-arrow-left"></i>');
+        .append('<i class="fa fa-arrow-left"></i><div class="btn-label">shift<br/>left</div>');
 
     let btnR = $('<div id="buttonMoveRight" class="btn btn-primary" title="Move Right" />')
         .bind('click', function() { moveBrushRight() })
-        .append('<i class="fa fa-arrow-right"></i>');
+        .append('<i class="fa fa-arrow-right"></i><div class="btn-label">shift<br/>right</div>');
 
-    let slideL = $('<div id="buttonSlideLeft" class="btn btn-primary btn-slide" title="Slide Left" />')
-        .bind('mousedown', function() { startSlide("left") })
-        .bind('mouseup', function() { stopSlide() })
-        .append('<i class="fa fa-arrow-left"></i>');
+    let zoomInY = $('<div id="buttonZoomInY" class="btn btn-success btn-zoom" title="Y Zoom In" />')
+        .bind('click', function() { EKGEM.zoomInY() })
+        .append('<i class="fa fa-search-plus"></i><div class="btn-label">shift<br/>up</div>');
 
-    let slideR = $('<div id="buttonSlideRight" class="btn btn-primary btn-slide" title="Slide Right" />')
-        .bind('mousedown', function() { startSlide("right") })
-        .bind('mouseup', function() { stopSlide() })
-        .append('<i class="fa fa-arrow-right"></i>');
+    let zoomOutY = $('<div id="buttonZoomOutY" class="btn btn-success btn-zoom" title="Y Zoom Out" />')
+        .bind('click', function() { EKGEM.zoomOutY() })
+        .append('<i class="fa fa-search-minus"></i><div class="btn-label">shift<br/>down</div>');
+
 
 
     $("<div id='moveButtons'/>")
-        .append(slideL)
         .append(btnL)
+        .append(zoomOutY)
+        .append(zoomInY)
         .append(btnR)
-        .append(slideR)
         .insertAfter(svg);
 
 
@@ -108,12 +107,12 @@ $('document').ready( function() {
         let status_val = status_select.val();
         if (+status_val === 2) {
             // Form is already complete - user should not be editing it again
-            $('body').css("display","none");
-            alert ('This record has already been scored.  Press OK to return to the home page.');
-            window.location = EKGEM.removeParam("id", window.location.href);
+            // $('body').css("display","none");
+            // alert ('This record has already been scored.  Press OK to return to the home page.');
+            // window.location = EKGEM.removeParam("id", window.location.href);
         } else {
             // Set it to complete so on-save it is fixed
-            status_select.val(2);
+            // status_select.val(2);
         }
 
         // Make the center class wider
@@ -160,4 +159,26 @@ $('document').ready( function() {
         EKGEM.setup();
     }
 
+
+    // HOTKEYS
+    var k = hotkeys.noConflict();
+    k('shift+right,shift+left,shift+up,shift+down', function(event,handler) {
+        switch(handler.key){
+            case "shift+left": moveBrushLeft();
+                event.preventDefault();
+                break;
+            case "shift+right": moveBrushRight();
+                event.preventDefault();
+                break;
+            case "shift+up": EKGEM.zoomInY();
+                event.preventDefault();
+                break;
+            case "shift+down": EKGEM.zoomOutY();
+                event.preventDefault();
+                break;
+        }
+    });
+
+
 });
+

@@ -41,15 +41,20 @@
 }
 
 #moveButtons > .btn {
-    width: 200px;
-    margin: 0 20px 20px 20px;
+    width: 40%;
+    margin: 0 20px 10px 20px;
 }
 
-#moveButtons > .btn-slide {
+#moveButtons > .btn-zoom {
     width: 50px;
-    margin: 0 5px 20px 5px;
+    margin: 0 5px 10px 5px;
+    text-align: center;
 }
 
+#moveButtons .btn-label {
+    font-size: 10px;
+    font-family: "Courier New", Courier, monospace;
+}
 
 btn.disabled {
     background-color: #cccccc;

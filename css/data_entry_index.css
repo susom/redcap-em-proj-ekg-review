@@ -6,6 +6,7 @@
 #center {
     padding: 0 20px 60px 20px;
     /*max-width: 1000px;*/
+    max-width: none;
 }
 
 #dataEntryTopOptions {display:none;}
@@ -21,6 +22,16 @@
 #submit-btn-dropdown { display:none; }
 
 
+/*td.greenhighlight { background-color: transparent !important; }*/
+
+.data_matrix.greenhighlight,
+.labelmatrix.greenhighlight,
+.greenhighlight table td,
+.greenhighlight {
+    background: none !important;
+}
+
+
 div.progress{ margin-top: 20px;}
 
 /*Hide the Form Status stuff*/
@@ -32,3 +43,4 @@ div.progress{ margin-top: 20px;}
 
 #record_id-tr, #reviewer-tr, #start_time-tr, #end_time-tr, #object_name-tr { display: none; }
 
+#questiontable { opacity: 0; }

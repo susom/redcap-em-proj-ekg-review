@@ -15,6 +15,12 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
     public $group_id = null;
     public $totalCount, $totalComplete, $totalPercent;
+    public $totalCountDag, $totalCompleteDag, $totalPercentDag;
+
+
+    public $unassignedRecords;      // Array of all unassigned records
+    public $availableRecords;       // Array of records specifically avaialble for next batch for current DAG user
+
 
     function __construct($project_id = null)
     {
@@ -48,33 +54,92 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         return !empty($this->group_id);
     }
 
+
     /**
      * Get unassigned and incomplete records
-     * @return array
+     * and also updates the total record count for progress bars
      */
     function getUnassignedRecords() {
         // Get all records that are not assigned to a DAG
         //$logic = "[ekg_review_complete] <> '2'";
         $logic = NULL;
-        $result = REDCap::getData('json', null, array('record_id', 'ekg_review_complete'), null, null, false, true, false, $logic);
+        $result = REDCap::getData('json', null, array('record_id', 'object_name', 'object_version', 'ekg_review_complete'), null, null, false, true, false, $logic);
         $records = json_decode($result,true);
 
         $unassigned = array();
+        $unassigned_objects = array();      // An array of records with a key of the object_name
+        $available = array();
+        $assigned_objects = array();        // An array of object_names that have been assigned
+
+
+        $completed_in_dag=0;
         $completed = 0;
 
+        $total = 0;
+        $total_in_dag = 0;
+
+        // Loop one, process the records and build an array records grouped by object_name that are not yet assigned.
+        // Also get a list of all objects assigned to the current DAG
+        $user_dag_name = REDCap::getGroupNames(true, $this->group_id);
         foreach ($records as $record) {
-            if (empty($record['redcap_data_access_group'])) $unassigned[] = $record;
+            $dag = $record['redcap_data_access_group'];
+            $object_name = $record['object_name'];
+
+            $total++;
             if ($record['ekg_review_complete'] == 2) $completed++;
+
+            if (empty($dag)) {
+                // Unassigned Objects
+                if (!isset($unassigned_objects[$object_name])) $unassigned_objects[$object_name] = [];
+                array_push($unassigned_objects[$object_name], $record);
+            } else {
+                // Already assigned to a DAG
+                // Check if the same dag as current user - if so, keep list of objects
+                if ($dag == $user_dag_name) {
+                    $total_in_dag++;
+                    if ($record['ekg_review_complete'] == 2) $completed_in_dag++;
+
+                    array_push($assigned_objects, $object_name);
+                }
+            }
+        }
+        $this->emDebug("Unassigned Objects", $unassigned_objects);
+        $this->emDebug("Assigned Objects", $assigned_objects);
+
+        // Now, filter unassigned objects by ensuring they are not already in current user's DAG
+        foreach ($unassigned_objects as $object_name => $records) {
+            if (in_array($object_name, $assigned_objects)) {
+                // This object is already in dag's list so we can't use it
+                $this->emDebug("Object already in DAG group", $object_name);
+            } else {
+                // This object is NOT is user's DAG list, so we can take one record and use it
+                // There could be multiple copies of an object, so we will only take one and make it available
+                $this->emDebug("Object Available", $object_name, count($records), $records[0]);
+                $available[] = $records[0];
+            }
         }
 
-        $this->totalCount = count($records);
+
+        $this->totalCount = $total;
         $this->totalComplete = $completed;
         $this->totalPercent = $this->totalCount == 0 ? 100 : round($this->totalComplete / $this->totalCount * 100, 1);
 
-        return $unassigned;
+        $this->totalCountDag = $total_in_dag;
+        $this->totalCompleteDag = $completed_in_dag;
+        $this->totalPercentDag = $this->totalCountDag == 0 ? 100 : round($this->totalCompleteDag / $this->totalCountDag * 100, 1);
+
+        $this->availableRecords = $available;
     }
 
 
+
+    /**
+     * Handle custom ajax for 'score_next' and 'get_batch'.  Otherwise, if DAG member protect non-data
+     * entry pages with redirect to project home
+     *
+     * @param $project_id
+     * @throws \Exception
+     */
     function redcap_every_page_before_render($project_id) {
         // We are going to prevent certain pages if a user is in a DAG
 
@@ -83,25 +148,26 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             return;
         }
 
-
-        $this->emDebug(__FUNCTION__ . " on " . PAGE);
-
+        if (PAGE != "ProjectGeneral/keep_alive.php") $this->emDebug(__FUNCTION__ . " on " . PAGE);
 
         // Handle 'get-batch' post
         if (isset($_POST['get_batch'])
             && $_POST['get_batch'] == 1
             )
         {
-            $unassigned = $this->getUnassignedRecords();
+            $this->getUnassignedRecords();
+
+            $unassigned = $this->availableRecords;
             $batch_size = min(count($unassigned), $this->getProjectSetting('batch-size'));
             $this->emDebug("Batch is $batch_size with " . count($unassigned) . " remaining...");
 
             if ($batch_size == 0) {
                 // There are no more remaining - do nothing
-                $this->emLog(USERID . " request for new batch cannot be filled since there are no batches remaining");
+                $this->emLog(USERID . " request for new batch cannot be filled since there are no unassigned records available to assign");
             } else {
                 // Transfer batch to this user
                 $records = array_slice($unassigned,0,$batch_size);
+
                 // DAG Name
                 $unique_group_name = REDCap::getGroupNames(true, $this->group_id);
 
@@ -138,7 +204,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         ) {
 
             // Fallback to home page
-            $this->emDebug("Loading custom home on request to " . PAGE);
+            $this->emDebug("Redirecting to custom home on " . PAGE);
             include($this->getModulePath() . "pages/record_home.php");
             $this->exitAfterHook();
             return;
@@ -147,13 +213,25 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
+    /**
+     * Inject custom CSS and JS
+     *
+     * @param      $project_id
+     * @param null $record
+     * @param      $instrument
+     * @param      $event_id
+     * @param null $group_id
+     * @param int  $repeat_instance
+     */
     function redcap_data_entry_form_top($project_id, $record = NULL, $instrument, $event_id, $group_id = NULL, $repeat_instance = 1) {
         $review_form = $this->getProjectSetting('review-form');
 
-        if ($review_form == $instrument && $this->isDagUser()) {
+        //$this->emDebug("In " . __FUNCTION__);
+
+        if ($instrument == $review_form && $this->isDagUser()) {
 
             // We are on the review form - inject!
-            $this->emDebug("Injecting custom css/js");
+            $this->emDebug("Injecting custom css/js in " . __FUNCTION__);
 
             // Add custom CSS and JS
             ?>
@@ -163,6 +241,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/data_entry_index.js") ?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/d3.v4.min.js")?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/ekg_viewer.js")?>'></script>
+                <script type='text/javascript' src='<?php echo $this->getUrl("js/hotkeys.min.js")?>'></script>
 
                 <script type='text/javascript'>
                     var EKGEM = EKGEM || {};
@@ -208,22 +287,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-    function redirect($url) {
-        // If contents already output, use javascript to redirect instead
-        if (headers_sent())
-        {
-            echo "<script type='text/javascript'>window.location.href=\"$url\";</script>";
-        }
-        // Redirect using PHP
-        else
-        {
-            header("Location: $url");
-        }
-
-    }
-
-
-
     /**
      * Redirect to next record (be sure to call exitAfterHook() when calling...
      * @param $project_id
@@ -233,7 +296,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Determine next record
         $logic = '[ekg_review_complete] = 0';
         $next_records = REDCap::getData($project_id, 'array', null, array('record_id', 'ekg_review_complete'), null, $group_id, false, true, false, $logic);
-        //$this->emDebug($next_records);
+        $this->emDebug("Redirecting to:",$next_records);
         if (empty($next_records)) {
             // There are none left - lets goto the homepage
             $url = APP_PATH_WEBROOT . "DataEntry/record_home.php?pid=" . $project_id . "&msg=" . htmlentities("All Records Complete");
@@ -262,20 +325,28 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      * @param int $repeat_instance
      */
     function redcap_save_record($project_id, $record, $instrument, $event_id, $group_id, $survey_hash, $response_id, $repeat_instance = 1 ) {
+
         $this->emDebug("Just saved record $record in group $group_id");
 
-        if (!empty($this->group_id)) {
+        // In order to handle server-side validation, we need to check if the url
+        // contains any required missing field validations
+        // $this->emDebug("_GET", empty($_GET['__reqmsgpre']), $_GET) ;
+
+        if (!empty($this->group_id) && empty($_GET['__reqmsgpre'])) {
 
             // Set end-time if empty
-            $q= REDCap::getData($project_id, 'json', array($record), array('record_id','end_time'));
+            $q= REDCap::getData($project_id, 'json', array($record), array('record_id','end_time','ekg_review_complete'));
             $results = json_decode($q,true);
+
             $this->emDebug("Record after Save:",$results);
             if (isset($results[0]['end_time']) && empty($results[0]['end_time'])) {
                 $results[0]['end_time'] = Date('Y-m-d H:i:s');
+                $results[0]['ekg_review_complete'] = 2;
                 $q = REDCap::saveData('json', json_encode($results));
                 $this->emDebug("Save Results:",$q);
             }
 
+            // Save and redirect to next record!
             $this->redirectToNextRecord($project_id, $this->group_id);
             $this->exitAfterHook();
         }
@@ -313,7 +384,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $this->emError("There was an error getting " . $object_name . " for record $record");
             return false;
         } else {
-            $this->emDebug("Found contents:\n" . substr($result,0,100) . "...");
+            //$this->emDebug("Found contents:\n" . substr($result,0,100) . "...");
             $data = csvToArray($contents);
             return $data;
         }
@@ -410,6 +481,27 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         //}
         return $results;
     }
+
+
+
+    /**
+     * Utility for redirecting
+     * @param $url
+     */
+    function redirect($url) {
+        // If contents already output, use javascript to redirect instead
+        if (headers_sent())
+        {
+            echo "<script type='text/javascript'>window.location.href=\"$url\";</script>";
+        }
+        // Redirect using PHP
+        else
+        {
+            header("Location: $url");
+        }
+
+    }
+
 
 
 
