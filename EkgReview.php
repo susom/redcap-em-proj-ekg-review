@@ -65,8 +65,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         $logic = NULL;
         $result = REDCap::getData('json', null, array('record_id', 'object_name', 'object_version', 'ekg_review_complete'), null, null, false, true, false, $logic);
         $records = json_decode($result,true);
-
-        $unassigned = array();
+        
         $unassigned_objects = array();      // An array of records with a key of the object_name
         $available = array();
         $assigned_objects = array();        // An array of object_names that have been assigned
@@ -103,18 +102,18 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 }
             }
         }
-        $this->emDebug("Unassigned Objects", $unassigned_objects);
-        $this->emDebug("Assigned Objects", $assigned_objects);
+        //$this->emDebug("Unassigned Objects", $unassigned_objects);
+        //$this->emDebug("Assigned Objects", $assigned_objects);
 
         // Now, filter unassigned objects by ensuring they are not already in current user's DAG
         foreach ($unassigned_objects as $object_name => $records) {
             if (in_array($object_name, $assigned_objects)) {
                 // This object is already in dag's list so we can't use it
-                $this->emDebug("Object already in DAG group", $object_name);
+                //$this->emDebug("Object already in DAG group", $object_name);
             } else {
                 // This object is NOT is user's DAG list, so we can take one record and use it
                 // There could be multiple copies of an object, so we will only take one and make it available
-                $this->emDebug("Object Available", $object_name, count($records), $records[0]);
+                //$this->emDebug("Object Available", $object_name, count($records), $records[0]);
                 $available[] = $records[0];
             }
         }
