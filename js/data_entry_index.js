@@ -160,6 +160,8 @@ $('document').ready( function() {
     }
 
 
+    $('#ekg').focus();
+
     // HOTKEYS
     var k = hotkeys.noConflict();
     k('shift+right,shift+left,shift+up,shift+down', function(event,handler) {
