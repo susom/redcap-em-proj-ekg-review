@@ -44,3 +44,6 @@ div.progress{ margin-top: 20px;}
 #record_id-tr, #reviewer-tr, #start_time-tr, #end_time-tr, #object_name-tr { display: none; }
 
 #questiontable { opacity: 0; }
+
+/*#submit-btn-saverecord { float:right;}*/
+/*button[name="submit-btn-cancel"] { float:left; }*/

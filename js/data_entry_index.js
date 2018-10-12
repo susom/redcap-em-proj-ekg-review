@@ -62,21 +62,21 @@ $('document').ready( function() {
     let svg = $("<svg width='" + (EKGEM.width + 60) + "' height='500'/>").insertAfter('#subheader');
 
 
-    let btnL = $('<div id="buttonMoveLeft" class="btn btn-primary" title="Move Left" />')
+    let btnL = $('<div id="buttonMoveLeft" class="btn btn-primaryrc" title="Move Left\nhotkey: shift+left arrow" />')
         .bind('click', function() { moveBrushLeft() })
-        .append('<i class="fa fa-arrow-left"></i><div class="btn-label">shift<br/>left</div>');
+        .append('<i class="fa fa-long-arrow-alt-left"></i>');
 
-    let btnR = $('<div id="buttonMoveRight" class="btn btn-primary" title="Move Right" />')
+    let btnR = $('<div id="buttonMoveRight" class="btn btn-primaryrc" title="Move Right\nhotkey: shift+right arrow" />')
         .bind('click', function() { moveBrushRight() })
-        .append('<i class="fa fa-arrow-right"></i><div class="btn-label">shift<br/>right</div>');
+        .append('<i class="fa fa-long-arrow-alt-right"></i>');
 
-    let zoomInY = $('<div id="buttonZoomInY" class="btn btn-success btn-zoom" title="Y Zoom In" />')
+    let zoomInY = $('<div id="buttonZoomInY" class="btn btn-success btn-zoom" title="Zoom In on Y Axis\nhotkey: shift+up arrow" />')
         .bind('click', function() { EKGEM.zoomInY() })
-        .append('<i class="fa fa-search-plus"></i><div class="btn-label">shift<br/>up</div>');
+        .append('<i class="fa fa-search-plus"></i>');
 
-    let zoomOutY = $('<div id="buttonZoomOutY" class="btn btn-success btn-zoom" title="Y Zoom Out" />')
+    let zoomOutY = $('<div id="buttonZoomOutY" class="btn btn-success btn-zoom" title="Zoom Out on Y Axis\nhotkey: shift+down arrow" />')
         .bind('click', function() { EKGEM.zoomOutY() })
-        .append('<i class="fa fa-search-minus"></i><div class="btn-label">shift<br/>down</div>');
+        .append('<i class="fa fa-search-minus"></i>');
 
 
 
@@ -160,8 +160,6 @@ $('document').ready( function() {
     }
 
 
-    $('#ekg').focus();
-
     // HOTKEYS
     var k = hotkeys.noConflict();
     k('shift+right,shift+left,shift+up,shift+down', function(event,handler) {
@@ -180,6 +178,10 @@ $('document').ready( function() {
                 break;
         }
     });
+
+
+    $(window).focus();
+    $('#ekg').focus();
 
 
 });
