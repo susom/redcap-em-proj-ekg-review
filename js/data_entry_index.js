@@ -64,6 +64,14 @@ $('document').ready( function() {
             Shazam.hideDuration = 200;
         }, 500);
 
+        // Add record ID to header
+        $('<span/>')
+            .addClass('badge badge-dark')
+            .addClass('ml-2')
+            .text( ' #' + $('#record_id-tr td:last-child').text() )
+            .appendTo( '#subheaderDiv2' );
+
+
     }
 
 
