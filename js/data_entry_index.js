@@ -25,6 +25,50 @@ EKGEM.removeParam = function(key, sourceURL) {
 $('document').ready( function() {
 
 
+
+    // SHAZAM STUFF FOR QUESTIONS
+
+    if (EKGEM.dag) {
+
+        $('#center').removeClass('col-md-8').removeClass('col-lg-9');
+
+        // Center the finalize buttons
+        $('#__SUBMITBUTTONS__-tr td:first')
+            .remove();
+
+        $('#__SUBMITBUTTONS__-tr td:first')
+            .removeClass('col-5')
+            .addClass('text-center');
+
+        // Cancel button
+        $('button[name="submit-btn-cancel"]')
+            .removeClass('btn-defaultrc')
+            .removeClass('btn-sm')
+            .addClass('btn-danger')
+            .addClass('btn-lg')
+            .css({ "float": "left", "margin-top": "6px" });
+
+        // save button
+        $('#submit-btn-saverecord')
+            .addClass('btn-lg')
+            .removeClass('btn-primaryrc')
+            .addClass('btn-success')
+            .css({"float": "right", "width": "50%"});
+
+        setTimeout(function () {
+            $('.resetLinkParent').removeAttr('style').find('a').attr('tabindex', '-1')
+        }, 500);
+
+        setTimeout(function () {
+            Shazam.showDuration = 200;
+            Shazam.hideDuration = 200;
+        }, 500);
+
+    }
+
+
+
+
     // Adjust for margins and scaling factor (estimated margin + scaling)
     // console.log("Document Width", $(document).width());
     // console.log("svg width", docWidth);
@@ -103,9 +147,10 @@ $('document').ready( function() {
         $('body').addClass("DAG");
 
         // Set the form_complete status to be 2
-        let status_select = $('select[name="ekg_review_complete"]');
-        let status_val = status_select.val();
+        var status_select = $('select[name="ekg_review_complete"]');
+        var status_val = status_select.val();
         if (+status_val === 2) {
+            console.log("This record is already complete - you shouldn't be editing it!");
             // Form is already complete - user should not be editing it again
             // $('body').css("display","none");
             // alert ('This record has already been scored.  Press OK to return to the home page.');

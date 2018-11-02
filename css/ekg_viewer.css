@@ -15,26 +15,6 @@
     pointer-events: all;
 }
 
-/*.btn {*/
-    /*background-color: DodgerBlue; !* Blue background *!*/
-    /*border: none; !* Remove borders *!*/
-    /*color: white; !* White text *!*/
-
-    /*font-size: 16px; !* Set a font size *!*/
-    /*cursor: pointer; !* Mouse pointer on hover *!*/
-/*}*/
-
-/* Darker background on mouse-over */
-/*.btn:hover {*/
-    /*background-color: RoyalBlue;*/
-/*}*/
-
-/*.btn:disabled,*/
-/*.btn[disabled]{*/
-    /*background-color: #cccccc;*/
-    /*color: #666666;*/
-/*}*/
-
 #moveButtons {
     width: 100%;
     text-align:center;

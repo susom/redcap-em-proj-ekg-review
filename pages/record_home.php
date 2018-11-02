@@ -9,7 +9,7 @@ $html->PrintHeaderExt();
 $progress = $this->getProgress($project_id,$this->group_id);
 $percent = $progress['percent'];
 
-$this->getUnassignedRecords();
+$this->doRecordAnalysis();
 
 //$this->emDebug($progress);
 

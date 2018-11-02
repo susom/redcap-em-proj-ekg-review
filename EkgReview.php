@@ -6,12 +6,13 @@ use \Project;
 
 # Imports the Google Cloud client library
 use Google\Cloud\Storage\StorageClient;
-
-
+include_once "emLoggerTrait.php";
 
 
 class EkgReview extends \ExternalModules\AbstractExternalModule
 {
+
+    use emLoggerTrait;
 
     public $group_id = null;
     public $totalCount, $totalComplete, $totalPercent;
@@ -21,13 +22,11 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     public $unassignedRecords;      // Array of all unassigned records
     public $availableRecords;       // Array of records specifically avaialble for next batch for current DAG user
 
-
     function __construct($project_id = null)
     {
         parent::__construct();
-//        $this->emLog("Construct");
-
-        if (!empty($project_id)) {}
+        $this->ts_start = microtime(true);
+        //if (!empty($project_id)) {}
     }
 
 
@@ -35,9 +34,9 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         global $project_id;
 
         if (empty($project_id)) {
-            $this->emLog("project_id is not defined on page " . PAGE);
+            $this->emDebug("project_id is not defined on page " . PAGE);
         } elseif (empty(USERID)) {
-            $this->emLog("USERID is not defined on page " . PAGE);
+            $this->emDebug("USERID is not defined on page " . PAGE);
         } elseif (empty($this->group_id)) {
             // Try to get the group id
 
@@ -47,19 +46,20 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
             // Get Group ID
             $group_id = $user_rights['group_id'];
-            $this->emLog(USERID . " is part of DAG " . $group_id);
+            $this->emDebug(USERID . " is in DAG " . $group_id);
             $this->group_id = $group_id;
         }
-
         return !empty($this->group_id);
     }
 
 
     /**
-     * Get unassigned and incomplete records
-     * and also updates the total record count for progress bars
+     * This loop does two things at once:
+     * - First, it determines which records have not been assigned
+     * - Second, it determines assigned count per group for progress bars
      */
-    function getUnassignedRecords() {
+    function doRecordAnalysis() {
+
         // Get all records that are not assigned to a DAG
         //$logic = "[ekg_review_complete] <> '2'";
         $logic = NULL;
@@ -70,64 +70,69 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         $available = array();
         $assigned_objects = array();        // An array of object_names that have been assigned
 
-
-        $completed_in_dag=0;
+        $total = 0;
         $completed = 0;
 
-        $total = 0;
-        $total_in_dag = 0;
-
-        // Loop one, process the records and build an array records grouped by object_name that are not yet assigned.
-        // Also get a list of all objects assigned to the current DAG
         $user_dag_name = REDCap::getGroupNames(true, $this->group_id);
-        foreach ($records as $record) {
-            $dag = $record['redcap_data_access_group'];
-            $object_name = $record['object_name'];
+        $total_in_dag = 0;
+        $completed_in_dag=0;
 
+        // Loop one, process the records and build an array of records grouped by object_name that are not yet assigned.
+        // Also get a list of all objects assigned to the current DAG
+        foreach ($records as $record) {
+            $dag         = $record['redcap_data_access_group'];
+            $object_name = $record['object_name'];
+            $form_status = $record['ekg_review_complete'];
+
+            // Increment counters
             $total++;
-            if ($record['ekg_review_complete'] == 2) $completed++;
+            if ($form_status == 2) $completed++;
 
             if (empty($dag)) {
-                // Unassigned Objects
+                // If not in DAG, add to 'unassigned' objects array
                 if (!isset($unassigned_objects[$object_name])) $unassigned_objects[$object_name] = [];
                 array_push($unassigned_objects[$object_name], $record);
-            } else {
-                // Already assigned to a DAG
-                // Check if the same dag as current user - if so, keep list of objects
-                if ($dag == $user_dag_name) {
-                    $total_in_dag++;
-                    if ($record['ekg_review_complete'] == 2) $completed_in_dag++;
+            } else if ($dag == $user_dag_name) {
+                // Record is in this user's DAG
+                array_push($assigned_objects, $object_name);
 
-                    array_push($assigned_objects, $object_name);
-                }
+                // Increment Counters
+                $total_in_dag++;
+                if ($form_status == 2) $completed_in_dag++;
+            } else {
+                // Record is in some other DAG - do nothing
             }
         }
         //$this->emDebug("Unassigned Objects", $unassigned_objects);
         //$this->emDebug("Assigned Objects", $assigned_objects);
 
+
+        $this->totalCount       = $total;
+        $this->totalComplete    = $completed;
+        $this->totalPercent     = $this->totalCount == 0 ? 100 : round($this->totalComplete / $this->totalCount * 100, 1);
+
+        $this->totalCountDag    = $total_in_dag;
+        $this->totalCompleteDag = $completed_in_dag;
+        $this->totalPercentDag  = $this->totalCountDag == 0 ? 100 : round($this->totalCompleteDag / $this->totalCountDag * 100, 1);
+
+
         // Now, filter unassigned objects by ensuring they are not already in current user's DAG
-        foreach ($unassigned_objects as $object_name => $records) {
+        foreach ($unassigned_objects as $object_name => $unassigned_records) {
             if (in_array($object_name, $assigned_objects)) {
-                // This object is already in dag's list so we can't use it
+                // This object is already in user's dag list so we can't use it again
                 //$this->emDebug("Object already in DAG group", $object_name);
             } else {
                 // This object is NOT is user's DAG list, so we can take one record and use it
                 // There could be multiple copies of an object, so we will only take one and make it available
                 //$this->emDebug("Object Available", $object_name, count($records), $records[0]);
-                $available[] = $records[0];
+                //$available[] = $unassigned_records[0];
+                $available[] = array_shift($unassigned_records);
             }
         }
-
-
-        $this->totalCount = $total;
-        $this->totalComplete = $completed;
-        $this->totalPercent = $this->totalCount == 0 ? 100 : round($this->totalComplete / $this->totalCount * 100, 1);
-
-        $this->totalCountDag = $total_in_dag;
-        $this->totalCompleteDag = $completed_in_dag;
-        $this->totalPercentDag = $this->totalCountDag == 0 ? 100 : round($this->totalCompleteDag / $this->totalCountDag * 100, 1);
-
         $this->availableRecords = $available;
+
+        // Debug summary stats:
+        $this->emDebug("Total: " . $this->totalCount, "Total in DAG: " . $this->totalCountDag, "Count Available: " . count($this->availableRecords));
     }
 
 
@@ -141,41 +146,42 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function redcap_every_page_before_render($project_id) {
         // We are going to prevent certain pages if a user is in a DAG
-
         if (! $this->isDagUser()) {
-            $this->emDebug("Not a DAG User");
+            //$this->emDebug("Not a DAG User");
             return;
         }
 
-        if (PAGE != "ProjectGeneral/keep_alive.php") $this->emDebug(__FUNCTION__ . " on " . PAGE);
+        if (PAGE == "ProjectGeneral/keep_alive.php") {
+            return;
+        }
+
+        $this->emDebug(__FUNCTION__ . " on " . PAGE . " with: ", $_POST);
 
         // Handle 'get-batch' post
-        if (isset($_POST['get_batch'])
-            && $_POST['get_batch'] == 1
-            )
+        if (isset($_POST['get_batch']) && $_POST['get_batch'] == 1)
         {
-            $this->getUnassignedRecords();
+            $this->doRecordAnalysis();
 
             $unassigned = $this->availableRecords;
             $batch_size = min(count($unassigned), $this->getProjectSetting('batch-size'));
-            $this->emDebug("Batch is $batch_size with " . count($unassigned) . " remaining...");
+            $this->emDebug("Batch is $batch_size with " . count($unassigned) . " records available...");
 
             if ($batch_size == 0) {
                 // There are no more remaining - do nothing
-                $this->emLog(USERID . " request for new batch cannot be filled since there are no unassigned records available to assign");
+                $this->emLog(USERID . "'s request for new batch cannot be filled since there are no unassigned records available to assign");
             } else {
                 // Transfer batch to this user
                 $records = array_slice($unassigned,0,$batch_size);
 
                 // DAG Name
                 $unique_group_name = REDCap::getGroupNames(true, $this->group_id);
-
-                $this->emDebug("Slice of records: ", $records);
                 foreach ($records as &$record) {
                     $record['redcap_data_access_group'] = $unique_group_name;
                 }
                 $result = REDCap::saveData('json', json_encode($records));
                 $this->emLog("Assigned batch of " . $batch_size . " records to group " . $this->group_id . " / " . $unique_group_name, $result);
+
+                // Jump to the next score
                 $_POST['score_next'] = 1;
             }
         }
@@ -183,6 +189,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Handle 'go next'
         if (isset($_POST['score_next']) && $_POST['score_next'] == 1) {
             // Lets redirect to the next record for this user
+            $this->emDebug("Score next called for group " . $this->group_id);
             $this->redirectToNextRecord($project_id, $this->group_id);
             $this->exitAfterHook();
             return;
@@ -201,9 +208,8 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                  && $_SERVER['REQUEST_METHOD'] === 'GET'
             )
         ) {
-
             // Fallback to home page
-            $this->emDebug("Redirecting to custom home on " . PAGE);
+            $this->emDebug("Redirecting DAG user to custom home page on " . PAGE . " with request method " . $_SERVER['REQUEST_METHOD']);
             include($this->getModulePath() . "pages/record_home.php");
             $this->exitAfterHook();
             return;
@@ -225,12 +231,10 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     function redcap_data_entry_form_top($project_id, $record = NULL, $instrument, $event_id, $group_id = NULL, $repeat_instance = 1) {
         $review_form = $this->getProjectSetting('review-form');
 
-        //$this->emDebug("In " . __FUNCTION__);
-
         if ($instrument == $review_form && $this->isDagUser()) {
 
             // We are on the review form - inject!
-            $this->emDebug("Injecting custom css/js in " . __FUNCTION__);
+            $this->emDebug("Injecting custom css/js in " . __FUNCTION__ . " on $instrument");
 
             // Add custom CSS and JS
             ?>
@@ -249,6 +253,15 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                     EKGEM['dag']        = <?php echo json_encode($this->group_id ) ?>;
                     EKGEM['userid']     = <?php echo json_encode(USERID) ?>;
                     EKGEM['data']       = <?php echo json_encode($this->getObject($record)) ?>;
+                </script>
+            <?php
+        } else {
+
+            // Turn off Shazam for normal viewers
+            ?>
+                <script>
+                    var Shazam = Shazam || {};
+                    Shazam.DisableTransform = true;
                 </script>
             <?php
         }
@@ -295,18 +308,17 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Determine next record
         $logic = '[ekg_review_complete] = 0';
         $next_records = REDCap::getData($project_id, 'array', null, array('record_id', 'ekg_review_complete'), null, $group_id, false, true, false, $logic);
-        $this->emDebug("Redirecting to:",$next_records);
+        $this->emDebug("There are " . count($next_records) . " remaining for group $group_id...");
         if (empty($next_records)) {
             // There are none left - lets goto the homepage
             $url = APP_PATH_WEBROOT . "DataEntry/record_home.php?pid=" . $project_id . "&msg=" . htmlentities("All Records Complete");
+            $this->emDebug("None left - going to homepage");
             $this->redirect($url);
         } else {
             $next_record = key($next_records);
             $form = $this->getProjectSetting( "review-form");
-
-            $this->emDebug("Next record is $next_record");
             $url = APP_PATH_WEBROOT . "DataEntry/index.php?pid=" . $project_id . "&page=" . $form . "&id=" . htmlentities($next_record);
-            $this->emDebug("Redirect to $url");
+            $this->emDebug("Redirect to $next_record at $url");
             $this->redirect($url);
         }
     }
@@ -334,15 +346,15 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         if (!empty($this->group_id) && empty($_GET['__reqmsgpre'])) {
 
             // Set end-time if empty
-            $q= REDCap::getData($project_id, 'json', array($record), array('record_id','end_time','ekg_review_complete'));
+            $q = REDCap::getData($project_id, 'json', array($record), array('record_id','end_time','ekg_review_complete'));
             $results = json_decode($q,true);
 
-            $this->emDebug("Record after Save:",$results);
+            $this->emDebug("Saving record:",$results);
             if (isset($results[0]['end_time']) && empty($results[0]['end_time'])) {
                 $results[0]['end_time'] = Date('Y-m-d H:i:s');
                 $results[0]['ekg_review_complete'] = 2;
                 $q = REDCap::saveData('json', json_encode($results));
-                $this->emDebug("Save Results:",$q);
+                $this->emDebug("Updating end_time/status", json_encode($results[0]), "Save Result", $q);
             }
 
             // Save and redirect to next record!
@@ -467,17 +479,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $results[] = $obj->name();
         }
 
-        //$object = $bucket->object($filename);
-        //if ($object->exists()) {
-        //    $this->emDebug("$filename exists");
-        //    //$stream = $object->downloadAsStream();
-        //    //echo $stream->getContents();
-        //    $string = $object->downloadAsString();
-        //    return $string;
-        //} else {
-        //    $this->emDebug("$filename does not exist");
-        //    return false;
-        //}
         return $results;
     }
 
@@ -499,31 +500,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             header("Location: $url");
         }
 
-    }
-
-
-
-
-    /**
-     * Logging Functions
-     * @throws \Exception
-     */
-    function emLog() {
-        $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
-        $emLogger->emLog($this->PREFIX, func_get_args(), "INFO");
-    }
-
-    function emDebug() {
-        // Check if debug enabled
-        if ($this->getSystemSetting('enable-system-debug-logging') || $this->getProjectSetting('enable-project-debug-logging')) {
-            $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
-            $emLogger->emLog($this->PREFIX, func_get_args(), "DEBUG");
-        }
-    }
-
-    function emError() {
-        $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
-        $emLogger->emLog($this->PREFIX, func_get_args(), "ERROR");
     }
 
 }

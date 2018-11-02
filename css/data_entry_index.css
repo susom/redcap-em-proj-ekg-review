@@ -1,4 +1,77 @@
+/** VALIDATION MODAL CHANGES **/
+#reqPopup {
+    font-size: 125%;
+}
 
+#reqPopup div {
+    font-size: 12pt;
+    font-weight: normal;
+}
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:first-child {
+    color: red;
+}
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:first-child:after {
+    content: " for now (fix on resume)";
+}
+
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child {
+    color: green;
+}
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child:after {
+    content: " - lets fix it now";
+}
+
+
+/* TABLE CLEANUP */
+#questiontable {
+    background-color: #fff;
+    border: none;
+}
+
+#questiontable tr td {
+    border:none;
+
+}
+
+.shazam-box div {
+    width: 300px;
+    margin-right: 5px;
+    /*transition: 0.5s;*/
+}
+
+.shazam-box div div.other {
+    max-width: 250px;
+}
+
+.shazam-box div.label {
+    border: 1px solid #236aa7;
+    border-radius: 5px;
+    vertical-align: middle;
+    font-size: 110%;
+    padding-left: 5px;
+    margin-bottom: 3px;
+    color: #FFF;
+    background-color: #337ab7;
+}
+
+.resetLinkParent {
+    margin-top: 5px;
+    text-align: inherit;
+}
+
+.resetLinkParent a.smalllink:link, .resetLinkParent a.smalllink:visited { color: slategray; }
+.resetLinkParent a.smalllink:active, .resetLinkParent a.smalllink:hover { color: #0d0d0d;   }
+
+
+#south {
+    display:none;
+}
+
+.requiredlabel { display:none;}
 
 
 #west {display:none !important;}
@@ -10,12 +83,12 @@
 }
 
 #dataEntryTopOptions {display:none;}
-/*#dataEntryTopOptionsButtons { display: none; }*/
 
 #formSaveTip { display: none !important; }
 
 
 #contextMsg { display:none; }
+td.context_msg { display:none; }
 
 
 #submit-btn-placeholder{ display: none; }
@@ -31,19 +104,26 @@
     background: none !important;
 }
 
+div.progress{
+    /*margin-top: 20px;*/
+    margin-bottom: 10px;
+    font-size: 10pt;
+    font-weight: bold;
+}
 
-div.progress{ margin-top: 20px;}
 
-/*Hide the Form Status stuff*/
+/* Hide the Form Status stuff */
 #ekg_review_complete-sh-tr, #ekg_review_complete-tr { display: none; }
+#record_id-tr, #reviewer-tr, #start_time-tr, #end_time-tr, #object_name-tr { display: none; }
+
+/* Hide table at first */
+#questiontable { opacity: 0; }
+
 
 #__DELETEBUTTONS__-tr, #__LOCKRECORD__-tr { display:none; }
 
-/*#subheaderDiv2 { display: none; }*/
-
-#record_id-tr, #reviewer-tr, #start_time-tr, #end_time-tr, #object_name-tr { display: none; }
-
-#questiontable { opacity: 0; }
-
-/*#submit-btn-saverecord { float:right;}*/
-/*button[name="submit-btn-cancel"] { float:left; }*/
+#submit-btn-saverecord {
+    float:center;
+    width: 50%;
+}
+button[name="submit-btn-cancel"] { float:left; }
