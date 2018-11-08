@@ -15,21 +15,60 @@
     pointer-events: all;
 }
 
+
+
 #moveButtons {
     width: 100%;
     text-align:center;
 }
 
-#moveButtons > .btn {
+#moveButtons > .btn-xzoom {
     width: 40%;
-    margin: 0 20px 10px 20px;
+    margin: 0 10px 10px 10px;
+    cursor: ew-resize;
 }
 
-#moveButtons > .btn-zoom {
+#moveButtons > .btn-yzoom {
     width: 50px;
-    margin: 0 5px 10px 5px;
+    margin: 0 10px 10px 10px;
     text-align: center;
+    cursor: ns-resize;
 }
+
+
+#moveButtons > .btn-xscale {
+    min-width: 40px;
+    /*height: 20px;*/
+    /*font-size: 10pt;*/
+    cursor: ew-resize;
+}
+
+#moveButtons .xscale-badges .badge {
+    display: block;
+    max-width: 40px;
+    cursor: ew-resize;
+    margin: 2px;
+}
+
+#moveButtons .xscale-badges .badge:hover {
+    background-color: #333;
+}
+
+
+#moveButtons .xscale-badges {
+    display: inline-block;
+}
+
+
+#moveButtons > .help-icon {
+    font-size: 18pt;
+    width: 24px;
+    margin: 0 12px 10px -12px;
+    color: #b5af0c;
+    cursor: help;
+    /*10px 10px 10px;*/
+}
+
 
 #moveButtons .btn-label {
     font-size: 10px;

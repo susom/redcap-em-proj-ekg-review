@@ -52,6 +52,21 @@ $this->doRecordAnalysis();
             <p class="text-center">
                 You may stop at any time and return to this page to resume.
             </p>
+            <p>
+                <div class="alert alert-secondary ml-4 mr-4">
+                    <table>
+                        <tr>
+                            <td>
+                                <h4><i class="fas fa-hand-point-right"></i> </h4>
+                            </td>
+                            <td class="text-left pl-3">
+                                Hint: you can use 'hotkeys' to quickly navigate the ECG with your keyboard.<br>
+                                Hold the SHIFT and press the ARROW keys - LEFT or RIGHT to pan and UP/DOWN to adjust the gain
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </p>
 
             <form method="POST">
                 <div class="text-center">

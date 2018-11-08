@@ -17,13 +17,15 @@ EKGEM.setup = function() {
         yZoomLevels = {
             "0": [-1,1],
             "1": [-0.5,0.5],
-            "2": [-0.25,0.25]
+            "2": [-0.25,0.25],
+            "3": [-0.1, 0.1]
         },
         // Set how often to draw the Y axis tick labels
         yZoomLabelResolution = {
             "0": 20,
             "1": 20,
-            "2": 4
+            "2": 4,
+            "3": 1
         }
     ;
 
@@ -67,7 +69,7 @@ EKGEM.setup = function() {
 
     EKGEM.zoomInY = function() {
         // Change Y-Axis Scaling
-        yZoomLevel = Math.min(2, yZoomLevel+1);
+        yZoomLevel = Math.min(3, yZoomLevel+1);
         EKGEM.zoomY();
     };
 
@@ -313,19 +315,44 @@ EKGEM.setup = function() {
         opacity: 1
     }, 500);
 
-    $('body').on('keypress', function(args) {
-        // console.log(args);
-        if (args.keyCode === 60 || args.keyCode === 44) {
-            $('#buttonMoveLeft').click();
-            return false;
-        } else if (args.keyCode === 46 || args.keyCode == 62) {
-            $('#buttonMoveRight').click();
-            return false;
-        }
-    });
+    // MOVED TO HOTKEYS
+    // $('body').on('keypress', function(args) {
+    //     // console.log(args);
+    //     if (args.keyCode === 60 || args.keyCode === 44) {
+    //         $('#buttonMoveLeft').click();
+    //         return false;
+    //     } else if (args.keyCode === 46 || args.keyCode == 62) {
+    //         $('#buttonMoveRight').click();
+    //         return false;
+    //     }
+    // });
 
 };
 
+EKGEM.setWidth = function(setWidth){
+
+    setWidth = Math.round(8.133333 * setWidth,0);
+
+    var s = d3.brushSelection(d3.select(".brush").node());
+    var width = s[1] - s[0];
+
+    console.log(s[0], s[1], width, setWidth);
+
+    // If the width is unchanged, do nothing
+    if (setWidth == width) return;
+
+    if(s[0] + setWidth < EKGEM.width){
+        s[0] = s[0];
+        s[1] = s[0] + setWidth;
+    }else{
+        s[1] = EKGEM.width;
+        s[0] = s[1] - setWidth;
+    }
+
+    console.log(s[0], s[1], width, setWidth);
+
+    d3.select(".brush").call(EKGEM.brush.move, [s[0], s[1]]);
+};
 
 
 // function brushed() {

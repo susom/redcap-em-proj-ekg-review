@@ -241,6 +241,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 <style><?php echo file_get_contents($this->getModulePath() . "css/data_entry_index.css")?></style>
                 <style><?php echo file_get_contents($this->getModulePath() . "css/ekg_viewer.css")?></style>
 
+
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/data_entry_index.js") ?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/d3.v4.min.js")?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/ekg_viewer.js")?>'></script>

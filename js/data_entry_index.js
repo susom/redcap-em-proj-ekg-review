@@ -64,6 +64,24 @@ $('document').ready( function() {
             Shazam.hideDuration = 200;
         }, 500);
 
+        // // Set focus
+        // var i = $('<input/>').css({
+        //     width: "2px",
+        //     opacity: "50"
+        // })
+        //     .addClass('first-focus')
+        //     .focus()
+        //     .insertBefore($('input[name="q1"]'));
+
+        setTimeout(function () {
+            // $('#center').click();
+            $('#buttonMoveRight').focus();
+            // console.log($.each($(":focus"), function(index, value) { console.log(i, value) } ));
+            // $('body').trigger('click').focus();
+        }, 700);
+        //
+
+
         // Add record ID to header
         $('<span/>')
             .addClass('badge badge-dark')
@@ -114,31 +132,83 @@ $('document').ready( function() {
     let svg = $("<svg width='" + (EKGEM.width + 60) + "' height='500'/>").insertAfter('#subheader');
 
 
-    let btnL = $('<div id="buttonMoveLeft" class="btn btn-primaryrc" title="Move Left\nhotkey: shift+left arrow" />')
+    let btnL = $('<div id="buttonMoveLeft" class="btn btn-primaryrc btn-xzoom" title="Move Left\nhotkey: shift+left arrow" />')
         .bind('click', function() { moveBrushLeft() })
+        .attr('tabindex', 0)
         .append('<i class="fa fa-long-arrow-alt-left"></i>');
 
-    let btnR = $('<div id="buttonMoveRight" class="btn btn-primaryrc" title="Move Right\nhotkey: shift+right arrow" />')
+    let btnR = $('<div id="buttonMoveRight" class="btn btn-primaryrc btn-xzoom" title="Move Right\nhotkey: shift+right arrow" />')
         .bind('click', function() { moveBrushRight() })
+        .attr('tabindex', 0)
         .append('<i class="fa fa-long-arrow-alt-right"></i>');
 
-    let zoomInY = $('<div id="buttonZoomInY" class="btn btn-success btn-zoom" title="Zoom In on Y Axis\nhotkey: shift+up arrow" />')
+    let zoomInY = $('<div id="buttonZoomInY" class="btn btn-success btn-yzoom" title="Zoom In on Y Axis\nhotkey: shift+up arrow" />')
         .bind('click', function() { EKGEM.zoomInY() })
+        .attr('tabindex', 0)
         .append('<i class="fa fa-search-plus"></i>');
 
-    let zoomOutY = $('<div id="buttonZoomOutY" class="btn btn-success btn-zoom" title="Zoom Out on Y Axis\nhotkey: shift+down arrow" />')
+    let zoomOutY = $('<div id="buttonZoomOutY" class="btn btn-success btn-yzoom" title="Zoom Out on Y Axis\nhotkey: shift+down arrow" />')
         .bind('click', function() { EKGEM.zoomOutY() })
+        .attr('tabindex', 0)
         .append('<i class="fa fa-search-minus"></i>');
 
+    const w30 = $('<div id="x30" class="badge badge-secondary btn-xscale">30 sec</div>')
+        .bind('click', function() {
+            console.log('clicking!');
+            EKGEM.setWidth(30)
+        });
+    const w10 = $('<div id="x10" class="badge badge-secondary btn-xscale">10 sec</div>')
+        .bind('click', function() {
+            console.log('clicking!');
+            EKGEM.setWidth(10)
+        });
+    const w5 = $('<div id="x5" class="badge badge-secondary btn-xscale">5 sec</div>')
+        .bind('click', function() {
+            console.log('clicking!');
+            EKGEM.setWidth(5)
+        });
+    const w3 = $('<div id="x3" class="badge badge-secondary btn-xscale">3 sec</div>')
+        .bind('click', function() {
+            console.log('clicking!');
+            EKGEM.setWidth(3)
+        });
+
+    const wBox1 = $("<div/>")
+        .addClass('xscale-badges')
+        .append(w3)
+        .append(w5);
+
+    const wBox2 = $("<div/>")
+        .addClass('xscale-badges')
+        .append(w10)
+        .append(w30);
+
+    const helpIcon = $('<div class="btn btl-lg help-icon text-center"><i class="fas fa-question-circle"></i></div>')
+        .data('trigger', 'click')
+        .data('toggle', 'popover')
+        .data('title', '<i class="fas fa-hand-point-right"></i> Hotkey Shortcuts')
+        .data('html', true)
+        .data('content', 'Hint: you can use \'hotkeys\' to quickly navigate the ECG with your keyboard.<br>' +
+            '<ul><li>Hold SHIFT + LEFT-ARROW to go back in time</li>' +
+            '<li>Hold SHIFT + RIGHT-ARROW to go forward in time</li>' +
+            '<li>Hold SHIFT + UP-ARROW to increase Y Gain</li>' +
+            '<li>Hold SHIFT + DOWN-ARROW to decrese Y Gain</li></ul>');
 
 
     $("<div id='moveButtons'/>")
         .append(btnL)
         .append(zoomOutY)
+        .append(wBox1)
+        .append(wBox2)
         .append(zoomInY)
         .append(btnR)
+        .append(helpIcon)
         .insertAfter(svg);
 
+
+
+
+    $('.help-icon').popover();
 
     // Allow width to be wider
     $('#form>div').filter(":first").removeAttr('style');
@@ -215,26 +285,38 @@ $('document').ready( function() {
 
     // HOTKEYS
     var k = hotkeys.noConflict();
-    k('shift+right,shift+left,shift+up,shift+down', function(event,handler) {
-        switch(handler.key){
-            case "shift+left": moveBrushLeft();
+    k('shift+right,shift+left,shift+up,shift+down,\,,.,shift+\,,shift+.', function(event,handler) {
+        switch(handler.key) {
+            case "shift+left":
+            case ",":
+            case "shift+,":
+                moveBrushLeft();
                 event.preventDefault();
                 break;
-            case "shift+right": moveBrushRight();
+            case "shift+right":
+            case ".":
+            case "shift+.":
+                moveBrushRight();
                 event.preventDefault();
                 break;
-            case "shift+up": EKGEM.zoomInY();
+            case "shift+up":
+                EKGEM.zoomInY();
                 event.preventDefault();
                 break;
-            case "shift+down": EKGEM.zoomOutY();
+            case "shift+down":
+                EKGEM.zoomOutY();
                 event.preventDefault();
                 break;
+            default:
+                console.log(handler.key, handler);
         }
     });
 
+    // $('body').trigger('click').focus();
+    // console.log("Body has focus");
 
-    $(window).focus();
-    $('#ekg').focus();
+    // $(window).focus();
+    // $('#ekg').focus();
 
 
 });
