@@ -60,7 +60,7 @@ $this->doRecordAnalysis();
                                 <h4><i class="fas fa-hand-point-right"></i> </h4>
                             </td>
                             <td class="text-left pl-3">
-                                Hint: you can use 'hotkeys' to quickly navigate the ECG with your keyboard.<br>
+                                Hint: you can use 'hotkeys' to quickly navigate the EKG with your keyboard.<br>
                                 Hold the SHIFT and press the ARROW keys - LEFT or RIGHT to pan and UP/DOWN to adjust the gain
                             </td>
                         </tr>

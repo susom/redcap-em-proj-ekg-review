@@ -81,15 +81,15 @@ $('document').ready( function() {
         }, 700);
         //
 
-
         // Add record ID to header
-        $('<span/>')
-            .addClass('badge badge-dark')
-            .addClass('ml-2')
-            .text( ' #' + $('#record_id-tr td:last-child').text() )
-            .appendTo( '#subheaderDiv2' );
-
-
+        var urlParams = new URLSearchParams(location.search);
+        var record = urlParams.get('id');
+        $('#subheaderDiv2').text('EKG Project').append(
+            $('<span/>')
+                .addClass('badge badge-dark')
+                .addClass('ml-2')
+                .text( '#' + record ) //' #' + $('#record_id-tr td:last-child').text() )
+        );
     }
 
 
@@ -183,12 +183,12 @@ $('document').ready( function() {
         .append(w10)
         .append(w30);
 
-    const helpIcon = $('<div class="btn btl-lg help-icon text-center"><i class="fas fa-question-circle"></i></div>')
+    const helpIcon = $('<div id="buttonHelpInfo" class="btn text-center"><i class="fas fa-question-circle"></i></div>')
         .data('trigger', 'click')
         .data('toggle', 'popover')
         .data('title', '<i class="fas fa-hand-point-right"></i> Hotkey Shortcuts')
         .data('html', true)
-        .data('content', 'Hint: you can use \'hotkeys\' to quickly navigate the ECG with your keyboard.<br>' +
+        .data('content', 'Hint: you can use \'hotkeys\' to quickly navigate the EKG with your keyboard.<br>' +
             '<ul><li>Hold SHIFT + LEFT-ARROW to go back in time</li>' +
             '<li>Hold SHIFT + RIGHT-ARROW to go forward in time</li>' +
             '<li>Hold SHIFT + UP-ARROW to increase Y Gain</li>' +
@@ -199,16 +199,16 @@ $('document').ready( function() {
         .append(btnL)
         .append(zoomOutY)
         .append(wBox1)
+        .append(helpIcon)
         .append(wBox2)
         .append(zoomInY)
         .append(btnR)
-        .append(helpIcon)
         .insertAfter(svg);
 
 
 
 
-    $('.help-icon').popover();
+    $('#buttonHelpInfo').popover();
 
     // Allow width to be wider
     $('#form>div').filter(":first").removeAttr('style');

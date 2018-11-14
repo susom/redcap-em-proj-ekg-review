@@ -20,24 +20,41 @@
 #moveButtons {
     width: 100%;
     text-align:center;
+    vertical-align:top;
 }
 
-#moveButtons > .btn-xzoom {
-    width: 40%;
-    margin: 0 10px 10px 10px;
+#buttonMoveLeft {
+    width: 30%;
+    margin-right: 1%;
+    float: left;
+    cursor: ew-resize;
+}
+
+#buttonMoveRight {
+    width: 30%;
+    margin-left: 1%;
+    float:right;
     cursor: ew-resize;
 }
 
 #moveButtons > .btn-yzoom {
-    width: 50px;
-    margin: 0 10px 10px 10px;
+    vertical-align:top;
+    min-width: 40px;
+    width: 5%;
+    margin: 0 1%;
     text-align: center;
     cursor: ns-resize;
 }
 
+#moveButtons .xscale-badges {
+    display: inline-block;
+    vertical-align: middle;
+}
 
 #moveButtons > .btn-xscale {
+    /*min-width: 4%;*/
     min-width: 40px;
+    padding: 5px;
     /*height: 20px;*/
     /*font-size: 10pt;*/
     cursor: ew-resize;
@@ -45,9 +62,11 @@
 
 #moveButtons .xscale-badges .badge {
     display: block;
+    /*max-width: 4%;*/
     max-width: 40px;
     cursor: ew-resize;
-    margin: 2px;
+    /*margin: 2px;*/
+    /*margin: 2px 2%;*/
 }
 
 #moveButtons .xscale-badges .badge:hover {
@@ -55,16 +74,21 @@
 }
 
 
-#moveButtons .xscale-badges {
-    display: inline-block;
-}
 
 
-#moveButtons > .help-icon {
+#buttonHelpInfo {
+    vertical-align:top;
+    min-width: 40px;
+    width: 5%;
+    margin: 0 1%;
+    text-align: center;
     font-size: 18pt;
-    width: 24px;
-    margin: 0 12px 10px -12px;
+    /*!*width: 24px;*!*/
+    /*width: 3%;*/
+    margin: 0 12px -12px -12px;
+    /*margin: 0 12px 0 -12px;*/
     color: #b5af0c;
+    /*height: 10px;*/
     cursor: help;
     /*10px 10px 10px;*/
 }

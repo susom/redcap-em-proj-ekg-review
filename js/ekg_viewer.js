@@ -101,8 +101,8 @@ EKGEM.setup = function() {
         line_chart.select(".line").attr("d", line);
 
 
-        y2.domain(y.domain());
-        context.select(".line").attr("d", line2);
+        // y2.domain(y.domain());
+        // context.select(".line").attr("d", line2);
 
     };
 
