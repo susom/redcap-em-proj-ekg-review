@@ -46,10 +46,6 @@
     cursor: ns-resize;
 }
 
-#moveButtons .xscale-badges {
-    display: inline-block;
-    vertical-align: middle;
-}
 
 #moveButtons > .btn-xscale {
     /*min-width: 4%;*/
@@ -60,12 +56,19 @@
     cursor: ew-resize;
 }
 
+#moveButtons .xscale-badges {
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
+}
+
 #moveButtons .xscale-badges .badge {
     display: block;
     /*max-width: 4%;*/
-    max-width: 40px;
+    max-width: 50px;
     cursor: ew-resize;
-    /*margin: 2px;*/
+    margin: 2px 0;
+    padding: 3px 10px;
     /*margin: 2px 2%;*/
 }
 
@@ -77,15 +80,16 @@
 
 
 #buttonHelpInfo {
+    padding: 0;
     vertical-align:top;
     min-width: 40px;
     width: 5%;
-    margin: 0 1%;
+    /*margin: 0 1%;*/
     text-align: center;
     font-size: 18pt;
     /*!*width: 24px;*!*/
     /*width: 3%;*/
-    margin: 0 12px -12px -12px;
+    margin: 0 0 -12px 0;
     /*margin: 0 12px 0 -12px;*/
     color: #b5af0c;
     /*height: 10px;*/
