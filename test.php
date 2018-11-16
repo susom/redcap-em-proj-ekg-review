@@ -7,6 +7,20 @@ function getNameVersion($object) {
     return array($object['object_name'], $object['object_version']);
 }
 
+function arraySwapAssoc($key1, $key2, $array) {
+    $newArray = array ();
+    foreach ($array as $key => $value) {
+        if ($key == $key1) {
+            $newArray[$key2] = $array[$key2];
+        } elseif ($key == $key2) {
+            $newArray[$key1] = $array[$key1];
+        } else {
+            $newArray[$key] = $value;
+        }
+    }
+    return $newArray;
+}
+
 function convertArrayToCsv($array) {
     $csv = fopen('php://temp/maxmemory:' . (5 * 1024 * 1024), 'r+');
     fputcsv($csv, $array);
@@ -16,20 +30,35 @@ function convertArrayToCsv($array) {
     return stream_get_contents($csv);
 }
 
-$debug = array();
+$debug = [];
+$alert = [];
 
 
-$reviewers = array( "one", "two", "three" );
-
-$initial_allocation_per_reviewer            = 10;   // Number of records to allocate to each reviewer (before QC)
-$max_initial_allocation_per_version         = 5;    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
-$initial_qc_per_reviewer                    = 3;    // Number of version 1 records to QC per reviewer
+$reviewers                                  = [
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve"
+];
+$initial_allocation_per_reviewer            = 800;   // Number of records to allocate to each reviewer (before QC)
+$max_initial_allocation_per_version         = 400;    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
+$initial_qc_per_reviewer                    = 80;    // Number of version 1 records to QC per reviewer
+$object_start                               = 1; // Just a starting number - could be anything
+$object_count                               = 6000;   // How many objects to make for this dataset
+$versions                                   = range(1,2);
 
 // Generate objects
-$object_start = 1000;
-$object_count = 60;
 $objects = range($object_start, $object_start+$object_count-1);
-$versions = range(1,2);
+
+
 $random_objects = array();
 foreach ($objects as $object) {
     foreach ($versions as $version) {
@@ -144,7 +173,7 @@ foreach ($results as $reviewer => $data) {
     }
 
     // slice max of count and $initial_qc_per_reviewer and duplicate as object 99.
-    $v1_qc = array_slice($v1_objects, 0, max($initial_qc_per_reviewer, count($v1_objects)));
+    $v1_qc = array_slice($v1_objects, 0, min($initial_qc_per_reviewer, count($v1_objects)));
 
     foreach ($v1_qc as $object) {
         $object['object_version'] = 99;
@@ -158,8 +187,69 @@ foreach ($results as $reviewer => $data) {
     $debug[] = "Adding " . count($v1_qc) . " objects and randomizing to $reviewer";
 }
 
-$debug[] = "Final Results";
+//$debug[] = "Results 1";
+//$debug[] = $results;
+
+
+
+
+// Make sure version 1 comes before version 99 for QC runs - the alternative is to put all the '99's at the end
+// but this means we won't get any internal qc until people finish their initial batch of records
+foreach ($results as $reviewer => $data) {
+    $object_names = [];
+    $object_versions = [];
+    // Get all of the version 1 records per reviewer
+    foreach ($data['records'] as $object) {
+        array_push($object_names, $object['object_name']);
+        array_push($object_versions, $object['object_version']);
+    }
+
+    //$debug[] = "$reviewer long arrays";
+    //$debug[] = $object_names;
+    //$debug[] = $object_versions;
+
+    for($i = 0; $i < (count($object_versions) - 1); $i++) {
+
+        // if version is 99, then search to see where the partner is
+        if ($object_versions[$i] == '99') {
+            // Look at the later elements in the array
+            for ($j = $i + 1; $j < count($object_versions); $j++) {
+                if ($object_names[$j] == $object_names[$i] && $object_versions[$j] == "1") {
+                    $object_versions[$j] = "99";
+                    $object_versions[$i] = "1";
+                    $debug[] = "Swapping order of reviewer $reviewer's elements $i and $j for $object_names[$i] so 1 is first";
+                    break;
+                }
+            }
+        }
+
+        // Make sure we don't have two of the same objects in a row for a reviewer
+        if ($object_names[$i] == $object_names[$i+1]) {
+            // We have two in a row
+            $alert[] = "Two entries in a row for $reviewer: objects $i and " . ($i+1) . " are the same object " . $object_names[$i] . " -- consider manually reordering";
+        }
+
+
+    }
+
+    // Rebuild the results array
+    $results[$reviewer]['records'] = [];
+    while (!empty($object_names)) {
+        array_push($results[$reviewer]['records'], array(
+            'object_name' => array_shift($object_names),
+            'object_version' => array_shift($object_versions)
+        ));
+    }
+}
+
+$debug[] = "Results After fixing order";
 $debug[] = $results;
+
+
+
+
+
+
 
 
 // Output to CSV format
@@ -192,13 +282,16 @@ foreach ($unassigned['records'] as $object) {
 $HtmlPage = new HtmlPage();
 $HtmlPage->PrintHeaderExt();
 
-echo "<h4>CSV for Import</h4><pre>" . arrayToCsv($rows, true) . "</pre>";
-
-//echo "<hr><h4>Rows</h4><pre>" . print_r($rows,true) . "</pre>";
-
+echo "<h4>CSV for Import <span class='badge badge-primary'>" . count($rows) . " rows</span></h4>";
+echo "<pre>" . arrayToCsv($rows, true) . "</pre>";
 
 
-echo "<hr><h4>Debug</h4><pre>" . print_r($debug,true) . "</pre>";
+if (!empty($_GET['debug'])) {
+
+    echo "<hr><h4>Debug</h4><pre>" . print_r($debug,true) . "</pre>";
+
+}
+
 
 exit();
 
