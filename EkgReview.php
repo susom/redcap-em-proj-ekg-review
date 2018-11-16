@@ -60,53 +60,62 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function doRecordAnalysis() {
 
-        // Get all records that are not assigned to a DAG
-        //$logic = "[ekg_review_complete] <> '2'";
+        // PULL ALL RECORDS (may be slow in larger projects)
         $logic = NULL;
         $result = REDCap::getData('json', null, array('record_id', 'object_name', 'object_version', 'ekg_review_complete'), null, null, false, true, false, $logic);
         $records = json_decode($result,true);
-        
-        $unassigned_objects = array();      // An array of records with a key of the object_name
-        $available = array();
-        $assigned_objects = array();        // An array of object_names that have been assigned
 
+        // Get the current user's DAG
+        $user_dag_name = REDCap::getGroupNames(true, $this->group_id);
+
+        // Loop one:
+        // -build an array of record_ids grouped by object_name that are not yet assigned to a DAG.
+        // -build an array of object_names assigned to the current DAG
+        // ignore any records that have a object_version of '99'
         $total = 0;
         $completed = 0;
 
-        $user_dag_name = REDCap::getGroupNames(true, $this->group_id);
         $total_in_dag = 0;
         $completed_in_dag=0;
 
-        // Loop one, process the records and build an array of records grouped by object_name that are not yet assigned.
-        // Also get a list of all objects assigned to the current DAG
+        $unassigned_objects = array();      // An array of records with a key of the object_name
+        $assigned_objects = array();        // An array of object_names that have been assigned
+
         foreach ($records as $record) {
-            $dag         = $record['redcap_data_access_group'];
-            $object_name = $record['object_name'];
-            $form_status = $record['ekg_review_complete'];
+            $dag            = $record['redcap_data_access_group'];
+            $object_name    = $record['object_name'];
+            $object_version = $record['object_version'];
+            $form_status    = $record['ekg_review_complete'];
 
             // Increment counters
             $total++;
             if ($form_status == 2) $completed++;
 
-            if (empty($dag)) {
-                // If not in DAG, add to 'unassigned' objects array
+            if (empty($dag) && $object_version != '99') {
+                // If not in DAG and not internal QC then add to 'unassigned' objects array
+
+                // Make an array of records for the object if it doesn't already exist
                 if (!isset($unassigned_objects[$object_name])) $unassigned_objects[$object_name] = [];
+
+                // Add to unassigned_objects
                 array_push($unassigned_objects[$object_name], $record);
+
             } else if ($dag == $user_dag_name) {
-                // Record is in this user's DAG
+                // Object is in user's DAG - keep object name
+                // There could end up being duplicates here if a user has more than one version of an object for internal QC.
                 array_push($assigned_objects, $object_name);
 
                 // Increment Counters
                 $total_in_dag++;
                 if ($form_status == 2) $completed_in_dag++;
             } else {
-                // Record is in some other DAG - do nothing
+                // Record belongs to some other user's DAG - do nothing
             }
         }
         //$this->emDebug("Unassigned Objects", $unassigned_objects);
         //$this->emDebug("Assigned Objects", $assigned_objects);
 
-
+        // Save totals to object for both unassigned and current user's DAG
         $this->totalCount       = $total;
         $this->totalComplete    = $completed;
         $this->totalPercent     = $this->totalCount == 0 ? 100 : round($this->totalComplete / $this->totalCount * 100, 1);
@@ -116,7 +125,9 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         $this->totalPercentDag  = $this->totalCountDag == 0 ? 100 : round($this->totalCompleteDag / $this->totalCountDag * 100, 1);
 
 
+        // Loop 2
         // Now, filter unassigned objects by ensuring they are not already in current user's DAG
+        $available = array();
         foreach ($unassigned_objects as $object_name => $unassigned_records) {
             if (in_array($object_name, $assigned_objects)) {
                 // This object is already in user's dag list so we can't use it again
@@ -125,7 +136,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 // This object is NOT is user's DAG list, so we can take one record and use it
                 // There could be multiple copies of an object, so we will only take one and make it available
                 //$this->emDebug("Object Available", $object_name, count($records), $records[0]);
-                //$available[] = $unassigned_records[0];
                 $available[] = array_shift($unassigned_records);
             }
         }
@@ -175,11 +185,17 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
                 // DAG Name
                 $unique_group_name = REDCap::getGroupNames(true, $this->group_id);
+
+                $record_ids = array();     // DEBUG ARRAY
+
                 foreach ($records as &$record) {
+                    $record_ids[] = $record['record_id'];
                     $record['redcap_data_access_group'] = $unique_group_name;
                 }
+
                 $result = REDCap::saveData('json', json_encode($records));
                 $this->emLog("Assigned batch of " . $batch_size . " records to group " . $this->group_id . " / " . $unique_group_name, $result);
+                $this->emDebug("Batch record ids:", $record_ids);
 
                 // Jump to the next score
                 $_POST['score_next'] = 1;
