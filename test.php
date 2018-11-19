@@ -30,8 +30,13 @@ function convertArrayToCsv($array) {
     return stream_get_contents($csv);
 }
 
-$debug = [];
-$alert = [];
+// Get bucket contents
+$bucket_contents = $module->getBucketContents(["prefix" => "adjudication/"]);
+
+
+$debug   = [];
+$alert   = [];
+$missing = [];
 
 
 $reviewers                                  = [
@@ -61,6 +66,11 @@ $objects = range($object_start, $object_start+$object_count-1);
 
 $random_objects = array();
 foreach ($objects as $object) {
+
+    if (!in_array($object, $bucket_contents)) {
+        array_push($missing, "Object '$object' is not present in gcp bucket");
+    }
+
     foreach ($versions as $version) {
         $random_objects[] = array('object_name' => $object, 'object_version' => $version);
     }
@@ -242,8 +252,8 @@ foreach ($results as $reviewer => $data) {
     }
 }
 
-$debug[] = "Results After fixing order";
-$debug[] = $results;
+//$debug[] = "Results After fixing order";
+//$debug[] = $results;
 
 
 
@@ -282,136 +292,88 @@ foreach ($unassigned['records'] as $object) {
 $HtmlPage = new HtmlPage();
 $HtmlPage->PrintHeaderExt();
 
-echo "<h4>CSV for Import <span class='badge badge-primary'>" . count($rows) . " rows</span></h4>";
-echo "<pre>" . arrayToCsv($rows, true) . "</pre>";
+//echo "<h4>CSV for Import <span class='badge badge-primary'>" . count($rows) . " rows</span></h4>";
+//echo "<pre>" . arrayToCsv($rows, true) . "</pre>";
+
+?>
+
+<div id="loading">
+    Loading (this can take a while...)
+</div>
+<div id="results" style="display:none;">
+
+    <?php
 
 
-if (!empty($_GET['debug'])) {
-
-    echo "<hr><h4>Debug</h4><pre>" . print_r($debug,true) . "</pre>";
-
-}
-
-
-exit();
-
-
-
-# Includes the autoloader for libraries installed with composer
-require $module->getModulePath() . 'vendor/autoload.php';
-
-# Imports the Google Cloud client library
-use Google\Cloud\Storage\StorageClient;
-
-
-//
-//echo "TEST";
-//exit();
-//
-//
-//echo "<pre>";
-//
-//echo "File Path: " . $module->getUrl("file.php", false, false);
-//
-
-# Load KeyFile from Textarea input
-$keyFileJson = $module->getProjectSetting("gcp-service-account-json");
-$keyFile = json_decode($keyFileJson,true);
-
-//echo $keyFileJson;
-//exit();
-
-
-//# Get the keyfile
-//$edoc_id = $module->getProjectSetting("gcp-service-account-json-file");
-//if (empty($edoc_id)) {
-//    $module->emError("Unable to load required JSON file");
-//    exit();
-//}
-//$path = \Files::copyEdocToTemp($edoc_id);
-//$module->emDebug("Path", $path);
-//
-//$keyFile = json_decode(file_get_contents($path), true);
-//$module->emDebug($keyFile);
-
-
-# Instantiates a client
-$storage = new StorageClient([
-    'keyFile' => $keyFile
-//    'keyFilePath' => $path
-]);
-
-
-# The name of a bucket
-//$bucketName = 'qsu-uploads-dev/adjudication';
-$bucketName = $module->getProjectSetting('gcp-bucket-name');
-
-echo "<pre>";
-
-echo "\n Bucket: " . $bucketName;
-echo "\n Key: " . implode(",", array_keys($keyFile));
-
-
-//exit($bucketName);
-
-
-# Get the bucket
-$bucket = $storage->bucket($bucketName);
-
-//$objects = $bucket->objects();
-
-$objects = $bucket->objects([
-    "prefix" => "adjudication/"
-]);
-
-//echo "\n Object Count: " . count($objects);
-//exit();
-
-//echo "<h3>$bucketName objects</h3>
-//<div class='jumbo'>";
-foreach ($bucket->objects() as $obj) {
-    echo "\n" . $obj->name;
-}
-//echo "</div>";
-exit();
+    // CSV
+    if (!empty($rows)) {
+        ?>
+        <h4>CSV For Import <span class='badge badge-secondary'><?php echo count($rows) ?> rows </span>
+            <button class="btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseCSV" aria-expanded="false" aria-controls="collapseCSV">
+                Show CSV
+            </button>
+        </h4>
+        <div class="collapse" id="collapseCSV">
+            <pre><?echo arrayToCsv($rows, true) ?></pre>
+        </div>
+        <?php
+    }
 
 
 
+    // ALERTS
+    if (!empty($alert)) {
+        ?>
+        <hr>
+        <h4>Alerts <span class='badge badge-secondary'><?php echo count($alert) ?></span>
+            <button class="btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseAlert" aria-expanded="false" aria-controls="collapseAlert">
+                Show Alerts
+            </button>
+        </h4>
+        <div class="collapse" id="collapseAlert">
+            <pre><?echo print_r($alert,true) ?></pre>
+        </div>
+        <?php
+    }
 
+    // MISSING
+    if (!empty($missing)) {
+        ?>
+        <hr>
+        <h4>Missing Bucket Items <span class='badge badge-secondary'><?php echo count($missing) ?></span>
+            <button class="btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseMissing" aria-expanded="false" aria-controls="collapseMissing">
+                Show Missing Bucket Items
+            </button>
+        </h4>
+        <div class="collapse" id="collapseMissing">
+           <pre><?echo print_r($missing,true) ?></pre>
+        </div>
+        <?php
+    }
 
+    // DEBUG
+    if (!empty($debug)) {
+        ?>
+        <hr>
+        <h4>Debug <span class='badge badge-secondary'><?php echo count($debug) ?></span>
+            <button class="btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseDebug" aria-expanded="false" aria-controls="collapseDebug">
+                Show Debug
+            </button>
+        </h4>
+        <div class="collapse" id="collapseDebug">
+            <pre><?echo print_r($debug,true) ?></pre>
+        </div>
+        <?php
+    }
 
-$object = $bucket->object("adjudication/a123456783.csv");
+    ?>
+</div>
 
-$contents = $object->downloadAsString();
+<script>
+    $(document).ready(function() {
+        $('#loading').hide();
+        $('#results').show();
+    });
+</script>
 
-echo $contents;
-file_put_contents("example.csv", $contents);
-
-
-
-
-foreach ($objects as $object) {
-    echo "\n" . $object->name();
-    $module->emDebug( $object->name());
-
-//    if ($object->name() == 'dropbox/biot-v1/data/zs5fq-nqwm-ctk9z2_8678361c-0d81-43a3-bdc3-33b2450e5f84.xml') {
-//
-//        $module->emDebug("MATCH");
-//        $module->emDebug("CONTENTS", $object->downloadAsString());
-
-//    }
-
-
-}
-//
-
-
-
-
-
-
-
-
-
-
-//$module->emDebug($bucket->info());
+<?php
