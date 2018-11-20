@@ -8,8 +8,11 @@
 // Make a debug array
 $debug = [];
 
-// Step 1 - load all complete records
-$records = $module->getAllCompleteRecords();
+
+
+// Step 1 - load all records
+$records = $module->getRecords();
+
 
 // Step 2 - make a map array that has object_name => version => [ $records ]
 $map = [];
@@ -32,17 +35,19 @@ foreach ($map as $object_name => $versions) {
 $debug[] = "After filtering singletons, " . count($map) . " objects with more than one version remain...";
 
 
+// Step 4 - do some version comparisons
 foreach ($map as $object_name => $versions) {
+
     if (isset($versions[99]) && isset($versions[1])) {
         // we have a QC check
         $result = $module->updateDifferences($versions[1], $versions[99], "qc");
-        $debug[] = "QC Comparison:\t$object_name\t" . $result;
+        if ($result) $debug[] = "QC Comparison:\t$object_name\t" . $result;
     }
 
     if (isset($versions[1]) && isset($versions[2])) {
         // we have a adjudication check
         $result = $module->updateDifferences($versions[1], $versions[2], "adjudication");
-        $debug[] = "Adjudication:\t$object_name\t" . $result;
+        if ($result) $debug[] = "Adjudication:\t$object_name\t" . $result;
     }
 }
 

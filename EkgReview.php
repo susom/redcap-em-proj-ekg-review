@@ -462,9 +462,11 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function updateDifferences($r1,$r2,$type) {
         if ($type == "qc") {
+            $pair_field   = 'qc_pair_record_id';
             $result_field = 'qc_result';
             $detail_field = 'qc_result_detail';
         } elseif ($type == "adjudication") {
+            $pair_field   = 'cross_reviewer_pair_record_id';
             $result_field = 'cross_reviewer_result';
             $detail_field = 'cross_reviewer_result_detail';
         } else {
@@ -475,24 +477,31 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         $r1_cache = serialize($r1);
         $r2_cache = serialize($r2);
 
-        $differences = $this->findDifferences($r1,$r2);
+        // In all cases, we will make sure their pair record ids are identified
+        $r1[$pair_field] = $r2['record_id'];
+        $r2[$pair_field] = $r1['record_id'];
+        $text = " - update $type pair record id";
 
-        if (empty($differences)) {
-            // SAME
-            $result = "1";
-            $text = " matched";
-        } else {
-            // DIFFERENT
-            $result = "2";
-            $text = " differ at " . implode(",", $differences);
+        // If both records are complete, then we will look at their differences
+        if ($r1['ekg_review_complete'] == '2' && $r2['ekg_review_complete'] == '2') {
+            $differences = $this->findDifferences($r1,$r2);
+
+            if (empty($differences)) {
+                // SAME
+                $result = "1";
+                $text = " - matched";
+            } else {
+                // DIFFERENT
+                $result = "2";
+                $text = " - differ at " . implode(",", $differences);
+            }
+            $r1[$result_field] = $result;
+            $r2[$result_field] = $result;
+            $r1[$detail_field] = "Record #" . $r2['record_id'] . $text;
+            $r2[$detail_field] = "Record #" . $r1['record_id'] . $text;
         }
 
-        $r1[$result_field] = $result;
-        $r2[$result_field] = $result;
-        $r1[$detail_field] = "Record #" . $r2['record_id'] . $text;
-        $r2[$detail_field] = "Record #" . $r1['record_id'] . $text;
-
-        // Update if needed
+        // Update database if records changed
         $data = [];
         if (serialize($r1) !== $r1_cache) {
             $data[] = $r1;
@@ -504,13 +513,13 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         }
 
         if (empty($data)) {
-            return  "No $type change for records #" . $r1['record_id'] . " & #" .  $r2['record_id'] . " -$text";
+            return  false; //"No change"; //for records #" . $r1['record_id'] . " & #" .  $r2['record_id'] . "$text";
         } else {
             $q = REDCap::saveData('json', json_encode($data));
             if (!empty($q['errors'])) $this->emError("Error updating $type", $data, $q);
             $this->emDebug("Update results",$q);
 
-            return "Updated $type for records #" . $r1['record_id'] . " & #" . $r2['record_id'] . " -$text";
+            return "Updated $type - #" . $r1['record_id'] . " & #" . $r2['record_id'] . "$text";
         }
     }
 
@@ -528,6 +537,18 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
+
+    /**
+     * Get all completed records
+     * @return mixed
+     */
+    function getRecords($filter = null) {
+        //$filter = "[ekg_review_complete] = '2'";
+        $q = REDCap::getData('json', null, null, null, null, false, true, false, $filter);
+        $records = json_decode($q,true);
+        $this->emDebug("Found " . count($records) . " records with filter = $filter");
+        return $records;
+    }
 
 
     /**
@@ -649,7 +670,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
         return $results;
     }
-
 
 
     /**

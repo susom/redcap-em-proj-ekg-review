@@ -116,8 +116,12 @@ div.progress{
 #ekg_review_complete-sh-tr, #ekg_review_complete-tr { display: none; }
 
 #record_id-tr, #reviewer-tr, #start_time-tr, #end_time-tr, #object_name-tr, #object_version-tr,
-#cross_reviewer_result-sh-tr, #cross_reviewer_result-tr, #cross_reviewer_result_detail-tr, #adjudication_result-tr,
-#qc_result-sh-tr, #qc_result-tr, #qc_result_detail-tr { display: none !important; }
+#cross_reviewer_pair_record_id-sh-tr, #cross_reviewer_result-tr, #cross_reviewer_result_detail-tr, #cross_reviewer_pair_record_id-tr,
+#adjudication_result-tr,
+#qc_pair_record_id-sh-tr, #qc_result-tr, #qc_result_detail-tr, #qc_pair_record_id-tr,
+#q1-sh-tr { display: none !important; }
+
+
 
 /* Hide table at first */
 #questiontable { opacity: 0; }

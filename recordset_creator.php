@@ -43,15 +43,15 @@ $reviewers                                  = [
     "a",
     "b",
     "c",
-    //"four",
-    //"five",
-    //"six",
-    //"seven",
-    //"eight",
-    //"nine",
-    //"ten",
-    //"eleven",
-    //"twelve"
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l"
 ];
 
 //$initial_allocation_per_reviewer            = 800;   // Number of records to allocate to each reviewer (before QC)
@@ -61,12 +61,25 @@ $reviewers                                  = [
 //$object_count                               = 6000;   // How many objects to make for this dataset
 //$versions                                   = range(1,2);
 
+
 $versions                                   = range(1,2);
-$initial_allocation_per_reviewer            = 40;   // Number of records to allocate to each reviewer (before QC)
-$max_initial_allocation_per_version         = 20;    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
-$initial_qc_per_reviewer                    = 5;    // Number of version 1 records to QC per reviewer
+$initial_allocation_per_reviewer            = 600;   // Number of records to allocate to each reviewer (before QC)
+$max_initial_allocation_per_version         = 300;    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
+$initial_qc_per_reviewer                    = 60;    // Number of version 1 records to QC per reviewer
 //$object_start                               = 1000; // Just a starting number - could be anything
-$object_count                               = 200;   // How many different objects to use (will end up record count =  $versions * $object_count + QC
+$object_count                               = 10000;   // How many different objects to use (will end up record count =  $versions * $object_count + QC
+
+
+if (isset($_GET['test'])) {
+    $reviewers                                  = ["a", "b", "c"];
+    $versions                                   = range(1,2);
+    $initial_allocation_per_reviewer            = 6;   // Number of records to allocate to each reviewer (before QC)
+    $max_initial_allocation_per_version         = floor($initial_qc_per_reviewer/ count($versions));    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
+    $initial_qc_per_reviewer                    = 2;    // Number of version 1 records to QC per reviewer
+    //$object_start                               = 1000; // Just a starting number - could be anything
+    $object_count                               = 15;   // How many different objects to use (will end up record count =  $versions * $object_count + QC
+}
+
 
 
 
@@ -93,7 +106,7 @@ foreach ($object_names as $object_name) {
 
 
 $debug[] = "Reviewers: " . implode(",", $reviewers);
-$debug[] = "Objects: " . count($random_objects) . " records = " . count($objects_names) . " objects x " . count($versions) . " versions";
+$debug[] = "Objects: " . count($random_objects) . " records = " . count($object_names) . " objects x " . count($versions) . " versions";
 
 // Randomize Objects
 shuffle($random_objects);
