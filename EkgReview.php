@@ -14,7 +14,12 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
     use emLoggerTrait;
 
-    public $group_id = null;
+    public $group_id;       // DAG Group ID
+    public $dag_name;       // DAG Name
+
+
+    // Record Summary Output
+    public $rs;
     public $totalCount, $totalComplete, $totalPercent;
     public $totalCountDag, $totalCompleteDag, $totalPercentDag;
 
@@ -48,6 +53,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $group_id = $user_rights['group_id'];
             $this->emDebug(USERID . " is in DAG " . $group_id);
             $this->group_id = $group_id;
+            $this->dag_name = REDCap::getGroupNames(true, $this->group_id);
         }
         return !empty($this->group_id);
     }
@@ -60,89 +66,118 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function doRecordAnalysis() {
 
+        // Do not re-do this if the values are already cached
+        if (!empty($this->rs)) return;
+
         // PULL ALL RECORDS (may be slow in larger projects)
         $logic = NULL;
-        $result = REDCap::getData('json', null, array('record_id', 'object_name', 'object_version', 'ekg_review_complete'), null, null, false, true, false, $logic);
+        $result = REDCap::getData('json', null,
+            array('record_id', 'start_time', 'end_time', 'object_name',
+                'object_version', 'adjudication_required', 'qc_result', 'ekg_review_complete'),
+            null, null, false, true, false, $logic);
         $records = json_decode($result,true);
 
-        // Get the current user's DAG
-        $user_dag_name = REDCap::getGroupNames(true, $this->group_id);
+        // Build a record summary object
+        // For each DAG a child summary object will be added
+        $rs = [
+            "total"             => 0,
+            "total_completed"   => 0
+        ];
 
-        // Loop one:
-        // -build an array of record_ids grouped by object_name that are not yet assigned to a DAG.
-        // -build an array of object_names assigned to the current DAG
-        // ignore any records that have a object_version of '99'
-        $total = 0;
-        $completed = 0;
-
-        $total_in_dag = 0;
-        $completed_in_dag=0;
-
-        $unassigned_objects = array();      // An array of records with a key of the object_name
-        $assigned_objects = array();        // An array of object_names that have been assigned
-
+        // Loop through the records to build the aggregate summary
         foreach ($records as $record) {
-            $dag            = $record['redcap_data_access_group'];
+
+            $dag                    = $record['redcap_data_access_group'];
+            $object_name            = $record['object_name'];
+            $object_version         = $record['object_version'];
+            $form_status            = $record['ekg_review_complete'];
+            $adjudication_required  = $record['adjudication_required___1'];
+            $qc_result              = $record['qc_result'];
+            $start_time             = $record['start_time'];
+            $end_time               = $record['end_time'];
+
+            $group = empty($dag) ? "unassigned" : $dag;
+
+            // V2 Initialize array for each dag in result status
+            if (!isset($rs[$group])) $rs[$group] = [
+                "total"             => 0,
+                "total_complete"    => 0,
+                "duration"          => 0,
+                "object_names"      => [],
+                "records"           => []
+            ];
+
+            // V2 Increment counters
+            $rs[$group]['total']++;
+            if ($form_status == '2') $rs[$group]['total_complete']++;
+            $duration = empty($end_time) ? 0 : strtotime($end_time) - strtotime($start_time);
+            $rs[$group]['duration'] += $duration;
+
+            // Keep array of object names for active DAG
+            if ($group == $this->dag_name) {
+                array_push($rs[$group]['object_names'], $object_name);
+            } elseif ($group == "unassigned") {
+                array_push($rs[$group]['records'], $record);
+            }
+        }
+
+
+        // Do aggregate totals for each dag and entire project
+        $rs['duration'] = $rs['total'] = $rs['total_complete'] = 0;
+        foreach ($rs as $dag_name => $data) {
+            $rs[$dag_name]['total_percent'] = $data['total'] == 0 ? 100 : round($data['total_complete'] / $data['total'] * 100, 1);
+
+            $rs['duration']         += empty($data['duration']) ? 0 : (int) $data['duration'];
+            $rs['total']            += $data['total'];
+            $rs['total_complete']   += $data['total_complete'];
+            //$this->emDebug($data['duration'], $rs['duration']);
+        }
+        $rs["total_percent"] = $rs['total'] == 0 ? 100 : round($rs['total_complete'] / $rs['total'] * 100, 1);
+
+        // Save to object
+        $this->rs = $rs;
+
+        //// Save totals to object for both unassigned and current user's DAG
+        //$this->totalCount       = $rs["total"];
+        //$this->totalComplete    = $rs["total_complete"];
+        //$this->totalPercent     = $rs["total_percent"];
+        //
+        //$this->totalCountDag    = $rs[$this->dag_name]["total"];
+        //$this->totalCompleteDag = $rs[$this->dag_name]["total_complete"];
+        //$this->totalPercentDag  = $rs[$this->dag_name]["total_percent"];
+        //$this->emDebug("Record Summary", array_keys($rs));
+        //$this->emDebug("DAG Summary", $rs[$this->dag_name]);
+        //$this->emDebug("Total Duration", $rs['duration']);
+    }
+
+
+    /**
+     * @return array where key is object_name and value is record
+     */
+    function getAvailableRecords() {
+        // Make sure we have done the analysis
+        $this->doRecordAnalysis();
+
+        // Get the two relevant blocks of data
+        $current_dag_object_names = $this->rs[$this->dag_name]['object_names'];
+        $unassigned_records = $this->rs['unassigned']['records'];
+
+        // Build an available records array (key is name and value is record)
+        $available_records = [];
+        foreach ($unassigned_records as $record) {
             $object_name    = $record['object_name'];
             $object_version = $record['object_version'];
-            $form_status    = $record['ekg_review_complete'];
 
-            // Increment counters
-            $total++;
-            if ($form_status == 2) $completed++;
-
-            if (empty($dag) && $object_version != '99') {
-                // If not in DAG and not internal QC then add to 'unassigned' objects array
-
-                // Make an array of records for the object if it doesn't already exist
-                if (!isset($unassigned_objects[$object_name])) $unassigned_objects[$object_name] = [];
-
-                // Add to unassigned_objects
-                array_push($unassigned_objects[$object_name], $record);
-
-            } else if ($dag == $user_dag_name) {
-                // Object is in user's DAG - keep object name
-                // There could end up being duplicates here if a user has more than one version of an object for internal QC.
-                array_push($assigned_objects, $object_name);
-
-                // Increment Counters
-                $total_in_dag++;
-                if ($form_status == 2) $completed_in_dag++;
+            if (in_array($object_name, $current_dag_object_names)) {
+                // This object is already assigned to the dag user - only assign it again if it is version 99 - internal QC
+                if ($object_version == 99) $available_records[$object_name] = $record;
             } else {
-                // Record belongs to some other user's DAG - do nothing
+                // This object is NOT in the dag's existing records so it is available
+                $available_records[$object_name] = $record;
             }
         }
-        //$this->emDebug("Unassigned Objects", $unassigned_objects);
-        //$this->emDebug("Assigned Objects", $assigned_objects);
-
-        // Save totals to object for both unassigned and current user's DAG
-        $this->totalCount       = $total;
-        $this->totalComplete    = $completed;
-        $this->totalPercent     = $this->totalCount == 0 ? 100 : round($this->totalComplete / $this->totalCount * 100, 1);
-
-        $this->totalCountDag    = $total_in_dag;
-        $this->totalCompleteDag = $completed_in_dag;
-        $this->totalPercentDag  = $this->totalCountDag == 0 ? 100 : round($this->totalCompleteDag / $this->totalCountDag * 100, 1);
-
-
-        // Loop 2
-        // Now, filter unassigned objects by ensuring they are not already in current user's DAG
-        $available = array();
-        foreach ($unassigned_objects as $object_name => $unassigned_records) {
-            if (in_array($object_name, $assigned_objects)) {
-                // This object is already in user's dag list so we can't use it again
-                //$this->emDebug("Object already in DAG group", $object_name);
-            } else {
-                // This object is NOT is user's DAG list, so we can take one record and use it
-                // There could be multiple copies of an object, so we will only take one and make it available
-                //$this->emDebug("Object Available", $object_name, count($records), $records[0]);
-                $available[] = array_shift($unassigned_records);
-            }
-        }
-        $this->availableRecords = $available;
-
-        // Debug summary stats:
-        $this->emDebug("Total: " . $this->totalCount, "Total in DAG: " . $this->totalCountDag, "Count Available: " . count($this->availableRecords));
+        $this->emDebug("Found " . count($available_records) . " of " . count($unassigned_records) . " records available for " . $this->dag_name);
+        return $available_records;
     }
 
 
@@ -170,31 +205,35 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Handle 'get-batch' post
         if (isset($_POST['get_batch']) && $_POST['get_batch'] == 1)
         {
-            $this->doRecordAnalysis();
+            $available_records = $this->getAvailableRecords();
 
-            $unassigned = $this->availableRecords;
-            $batch_size = min(count($unassigned), $this->getProjectSetting('batch-size'));
-            $this->emDebug("Batch is $batch_size with " . count($unassigned) . " records available...");
+            $this->emDebug("Available Records", $available_records);
+
+            //$unassigned = $this->availableRecords;
+            $batch_size = min(count($available_records), $this->getProjectSetting('batch-size'));
+            $this->emDebug("Batch is $batch_size with " . count($available_records) . " records available...");
 
             if ($batch_size == 0) {
                 // There are no more remaining - do nothing
                 $this->emLog(USERID . "'s request for new batch cannot be filled since there are no unassigned records available to assign");
             } else {
                 // Transfer batch to this user
-                $records = array_slice($unassigned,0,$batch_size);
+                $records = array_slice($available_records,0,$batch_size);
 
-                // DAG Name
-                $unique_group_name = REDCap::getGroupNames(true, $this->group_id);
-
+                //// DAG Name
+                //$unique_group_name = REDCap::getGroupNames(true, $this->group_id);
+                //
                 $record_ids = array();     // DEBUG ARRAY
 
-                foreach ($records as &$record) {
+                foreach ($records as $object_name => &$record) {
                     $record_ids[] = $record['record_id'];
-                    $record['redcap_data_access_group'] = $unique_group_name;
+                    $record['redcap_data_access_group'] = $this->dag_name;
                 }
 
                 $result = REDCap::saveData('json', json_encode($records));
-                $this->emLog("Assigned batch of " . $batch_size . " records to group " . $this->group_id . " / " . $unique_group_name, $result);
+                $this->emLog("Moving " . $batch_size . " records to DAG $this->dag_name / " . $this->group_id);
+                if (!empty($result['errors'])) $this->emError("Error assigning to DAG", $result);
+
                 $this->emDebug("Batch record ids:", $record_ids);
 
                 // Jump to the next score
@@ -265,7 +304,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
                 <script type='text/javascript'>
                     var EKGEM = EKGEM || {};
-                    EKGEM['progress']   = <?php echo json_encode($this->getProgress($project_id,$this->group_id)) ?>;
+                    EKGEM['progress']   = <?php echo json_encode($this->getProgress($this->dag_name)) ?>;
                     EKGEM['startTime']  = <?php echo json_encode(date("Y-m-d H:i:s")) ?>;
                     EKGEM['dag']        = <?php echo json_encode($this->group_id ) ?>;
                     EKGEM['userid']     = <?php echo json_encode(USERID) ?>;
@@ -285,35 +324,66 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-
     /**
-     * Get progress array for project and group
-     * @param $project_id
-     * @param null $group_id
-     * @return array|mixed
+     * Take a node from the record summary to generate a progress object
+     * @param null $dag_name
+     * @return array
      */
-    function getProgress($project_id, $group_id = NULL) {
-        $logic = null;
-        $result = REDCap::getData($project_id, 'json', null, array('record_id', 'ekg_review_complete'), null, $group_id, false, false, false, $logic);
-        $records = json_decode($result,true);
-        $total = $complete = 0;
-        foreach ($records as $record) {
-            if ($record['ekg_review_complete'] == 2) $complete++;
-            $total++;
-        }
+    function getProgress($dag_name = null) {
+        $this->doRecordAnalysis();
+        $node = empty($dag_name) ? $this->rs : $this->rs[$dag_name];
 
-        $percent = $total == 0 ? 100 : round($complete/$total * 100,1);
+        $total      = $node['total'];
+        $complete   = $node['total_complete'];
+        $percent    = $node['total_percent'];
+        $width      = round($percent,0);
+        $duration   = $node['duration'];
 
         $result = array(
-            'total' => $total,
-            'complete' => $complete,
-            'width' => round($percent,0),
-            'percent' => $percent,
-            'text' => $percent . "% ($complete / $total scored)"
+            'total'     => $total,
+            'complete'  => $complete,
+            'width'     => $width,
+            'percent'   => $percent,
+            'duration'  => $duration,
+            'text'      => $percent . "% ($complete / $total scored)"
         );
-
         return $result;
     }
+
+
+    /**
+     * Take the progress array and build a progress bar
+     * @param        $progress_array
+     * @param string $label
+     * @param bool   $include_duration (optional)
+     */
+    function renderProgressArea($progress_array, $label = "Progress", $include_duration = false) {
+
+        if ($include_duration) {
+            $d_min = round($progress_array['duration'] / 60, 0);
+            $d_avg = empty($progress_array['complete']) ? 0 : round($progress_array['duration'] / $progress_array['complete'], 0);
+
+            $duration = " taking $d_min min total, averaging $d_avg sec/record";
+        } else {
+            $duration = "";
+        }
+
+        ?>
+            <div>
+                <p>
+                    <b><?php echo $label?>:</b>
+                    <span class="progress-detail">
+                        <?php echo $progress_array['complete'] . " of " . $progress_array['total'] . " records have been reviewed" . $duration ?>
+                    </span>
+                </p>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-black" style="width:<?php echo $progress_array['percent'] ?>%">
+                        <?php echo $progress_array['percent'] ?>%
+                </div>
+            </div>
+        <?php
+    }
+
 
 
     /**

@@ -29,12 +29,22 @@
     ],
     "project": [
       {
+        "name": "EKG Bucket Progress",
+        "icon": "gear",
+        "url": "progress.php"
+      },
+      {
+        "name": "EKG Record Creator",
+        "icon": "gear",
+        "url": "recordset_creator.php"
+      },
+      {
         "name": "EKG Bucket Contents",
         "icon": "gear",
         "url": "bucket_contents.php"
       },
       {
-        "name": "Testet",
+        "name": "Test",
         "icon": "gear",
         "url": "test.php"
       }

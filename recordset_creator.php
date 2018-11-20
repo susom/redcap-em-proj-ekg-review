@@ -2,11 +2,6 @@
 /** @var \Stanford\EkgReview\EkgReview $module */
 
 
-echo "Test";
-
-exit();
-
-
 
 function getNameVersion($object) {
     return array($object['object_name'], $object['object_version']);
@@ -294,8 +289,10 @@ foreach ($unassigned['records'] as $object) {
     );
 }
 
-$HtmlPage = new HtmlPage();
-$HtmlPage->PrintHeaderExt();
+//$HtmlPage = new HtmlPage();
+//$HtmlPage->PrintHeaderExt();
+
+require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 
 //echo "<h4>CSV for Import <span class='badge badge-primary'>" . count($rows) . " rows</span></h4>";
 //echo "<pre>" . arrayToCsv($rows, true) . "</pre>";

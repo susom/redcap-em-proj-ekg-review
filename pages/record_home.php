@@ -6,12 +6,12 @@ $html = new HtmlPage();
 
 $html->PrintHeaderExt();
 
-$progress = $this->getProgress($project_id,$this->group_id);
-$percent = $progress['percent'];
+$dag_progress       = $this->getProgress($this->dag_name);
+$overall_progress   = $this->getProgress();
 
-$this->doRecordAnalysis();
 
-//$this->emDebug($progress);
+//$available_records = $this->getAvailableRecords( $this->rs[$this->dag_name]['object_names'], $this->rs['unassigned']['records'] );
+//$this->emDebug("AvailRecords", $available_records);
 
 ?>
 
@@ -20,7 +20,7 @@ $this->doRecordAnalysis();
     <ul class="nav navbar-expand navbar-nav navbar-right navbar-custom">
         <li class="nav-item active">
             <a class="nav-link" href="#">
-                <?php echo $progress['text'] ?>
+                <?php echo $dag_progress['text'] ?>
             </a>
         </li>
         <li class="nav-item">
@@ -47,97 +47,97 @@ $this->doRecordAnalysis();
 
         <?php
 
-        if ($percent != 100) {
+        if ($dag_progress['percent'] != 100) {
             ?>
-            <p class="text-center">
-                You may stop at any time and return to this page to resume.
-            </p>
-            <p>
-                <div class="alert alert-secondary ml-4 mr-4">
-                    <table>
-                        <tr>
-                            <td>
-                                <h4><i class="fas fa-hand-point-right"></i> </h4>
-                            </td>
-                            <td class="text-left pl-3">
-                                Hint: you can use 'hotkeys' to quickly navigate the EKG with your keyboard.<br>
-                                Hold the SHIFT and press the ARROW keys - LEFT or RIGHT to pan and UP/DOWN to adjust the gain
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </p>
+                <p class="text-center">
+                    You may stop at any time and return to this page to resume.
+                </p>
+                <p>
+                    <div class="alert alert-secondary ml-4 mr-4">
+                        <table>
+                            <tr>
+                                <td>
+                                    <h4><i class="fas fa-hand-point-right"></i> </h4>
+                                </td>
+                                <td class="text-left pl-3">
+                                    Hint: you can use 'hotkeys' to quickly navigate the EKG with your keyboard.<br>
+                                    Hold the SHIFT and press the ARROW keys - LEFT or RIGHT to pan and UP/DOWN to adjust the gain
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </p>
 
-            <form method="POST">
-                <div class="text-center">
-                    <button name="score_next" value="1" class="btn btn-primary btn-lg">Score Next EKG</button>
-                </div>
-            </form>
-            <?php
-        } elseif (count($this->availableRecords) == 0) {
-            // There are no more available records
-            ?>
-            <div class="alert alert-success text-center">
-                <h6 class="text-center">Congratulations - all EKGs have been assigned.  Your work is done!</h6>
-            </div>
+                <form method="POST">
+                    <div class="text-center">
+                        <button name="score_next" value="1" class="btn btn-primary btn-lg">Score Next EKG</button>
+                    </div>
+                </form>
             <?php
         } else {
-            // There are unassigned records remaining
+            // Get available records
+            $available_records = $this->getAvailableRecords();
 
-            $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
-
-            if ($max_number_per_dag == 0 || $this->totalCompleteDag < $max_number_per_dag ) {
-                // Still some available
+            if (count($availableRecords) == 0) {
+                // There are no more available records
                 ?>
-                <div class="alert alert-success">
-                    <h6 class="text-center">
-                        Additional EKGs need to be reviewed.
-                    </h6>
-                    <h6 class="text-center">
-                        Please press the button below to claim the
-                        the next batch of records.
-                    </h6>
-                    <br/>
-                    <form method="POST">
-                        <div class="text-center">
-                            <button name="get_batch" value="1" class="btn btn-success btn-lg">Get the Next Batch</button>
+                    <div class="alert alert-success text-center">
+                        <div class="d-flex">
+                            <div>
+                                <i style='font-size: 30pt;' class="fas fa-smile-wink mr-4"></i>
+                            </div>
+                            <div class="d-flex w-100 flex-grow-1 text-center"><b>Congratulations - there are no more unassigned EKGs at this moment.
+                                    Your work is done for now but additional EKGs could be added at a later date.</b>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                <div class="text-center"><b>Click on the 'My Projects' link on the nav-bar to return to REDCap</b></div>
                 <?php
             } else {
-                // Dag has exceeded max allowed
-                ?>
+                // There are unassigned records remaining
+                $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
+                $batch_size = $this->getProjectSetting("batch-size");
 
-                <div class="alert alert-success">
-                    <p class="text-center">
-                        Thank you for reviewing the maximum number of EKGs permitted by your group.
-                    </p>
-                </div>
-
-                <?php
+                if ($max_number_per_dag == 0 || $this->rs[$this->dag_name]['complete'] < $max_number_per_dag ) {
+                    // Still some available
+                    ?>
+                        <div class="alert alert-success">
+                            <h6 class="text-center">
+                                Additional EKGs need to be reviewed.
+                            </h6>
+                            <h6 class="text-center">
+                                Please press the button below to claim the
+                                the next batch of up to <?php echo $batch_size?> records.
+                            </h6>
+                            <br/>
+                            <form method="POST">
+                                <div class="text-center">
+                                    <button name="get_batch" value="1" class="btn btn-success btn-lg">Get the Next Batch</button>
+                                </div>
+                            </form>
+                        </div>
+                    <?php
+                } else {
+                    // Dag has exceeded max allowed
+                    ?>
+                        <div class="alert alert-success">
+                            <p class="text-center">
+                                Thank you for reviewing the maximum number of EKGs permitted by your group.
+                            </p>
+                        </div>
+                    <?php
+                }
             }
         }
-
         ?>
 
         <br/>
 
-        <p><b>Your Progress:</b> <span class="progress-detail"><?php echo $this->totalCompleteDag . " of " . $this->totalCountDag . " records in your bin have been reviewed" ?></span></p>
-        <div class="progress">
-            <div class="progress-bar progress-bar-striped progress-black" style="width:<?php echo $percent ?>%">
-                <?php echo $this->totalPercentDag ?>%
-            </div>
-        </div>
-
-
-        <p><b>Overall Progress:</b> <span class="progress-detail"><?php echo $this->totalComplete . " of " . $this->totalCount . " records are complete" ?></span></p>
-        <div class="progress">
-            <div class="progress-bar progress-bar-success progress-bar-striped progress-black" style="width:<?php echo $this->totalPercent ?>%">
-                <?php echo $this->totalPercent ?>%
-            </div>
-        </div>
-
+        <?php
+            // Render progress bars for this user:
+            $this->renderProgressArea($dag_progress, "Your Progress");
+            $this->renderProgressArea($overall_progress, "Overall Study Progress");
+        ?>
 
     </div>
 </main>
