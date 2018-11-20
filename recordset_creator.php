@@ -40,45 +40,60 @@ $missing = [];
 
 
 $reviewers                                  = [
-    "one",
-    "two",
-    "three",
-    "four",
-    "five",
-    "six",
-    "seven",
-    "eight",
-    "nine",
-    "ten",
-    "eleven",
-    "twelve"
+    "a",
+    "b",
+    "c",
+    //"four",
+    //"five",
+    //"six",
+    //"seven",
+    //"eight",
+    //"nine",
+    //"ten",
+    //"eleven",
+    //"twelve"
 ];
-$initial_allocation_per_reviewer            = 800;   // Number of records to allocate to each reviewer (before QC)
-$max_initial_allocation_per_version         = 400;    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
-$initial_qc_per_reviewer                    = 80;    // Number of version 1 records to QC per reviewer
-$object_start                               = 1; // Just a starting number - could be anything
-$object_count                               = 6000;   // How many objects to make for this dataset
+
+//$initial_allocation_per_reviewer            = 800;   // Number of records to allocate to each reviewer (before QC)
+//$max_initial_allocation_per_version         = 400;    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
+//$initial_qc_per_reviewer                    = 80;    // Number of version 1 records to QC per reviewer
+//$object_start                               = 1; // Just a starting number - could be anything
+//$object_count                               = 6000;   // How many objects to make for this dataset
+//$versions                                   = range(1,2);
+
 $versions                                   = range(1,2);
+$initial_allocation_per_reviewer            = 40;   // Number of records to allocate to each reviewer (before QC)
+$max_initial_allocation_per_version         = 20;    // Max number of records for any given version to be allocated ( use 1/2 of $initial_allocation for 2 versions)
+$initial_qc_per_reviewer                    = 5;    // Number of version 1 records to QC per reviewer
+//$object_start                               = 1000; // Just a starting number - could be anything
+$object_count                               = 200;   // How many different objects to use (will end up record count =  $versions * $object_count + QC
 
-// Generate objects
-$objects = range($object_start, $object_start+$object_count-1);
 
 
+// Generate objects from GCP bucket
+$object_names =  array_slice( $bucket_contents, 0, min($object_count, count($bucket_contents)) );
+if (count($bucket_contents) > $object_count) {
+    $alert[] = "You are taking a subset of the total bucket objects (" . count($bucket_contents) . ") because your object_count setting is less (" . $object_count . ")";
+} else {
+    $debug[] = "Using all " . count($bucket_contents) . " csv objects from GCP bucket";
+}
+
+// Convert object names into something with name and version
 $random_objects = array();
-foreach ($objects as $object) {
+foreach ($object_names as $object_name) {
 
-    if (!in_array($object, $bucket_contents)) {
-        array_push($missing, "Object '$object' is not present in gcp bucket");
+    if (!in_array($object_name, $bucket_contents)) {
+        array_push($missing, "Object '$object_name' is not present in gcp bucket");
     }
 
-    foreach ($versions as $version) {
-        $random_objects[] = array('object_name' => $object, 'object_version' => $version);
+    foreach ($versions as $object_version) {
+        $random_objects[] = array('object_name' => $object_name, 'object_version' => $object_version);
     }
 }
 
 
 $debug[] = "Reviewers: " . implode(",", $reviewers);
-$debug[] = "Objects: " . count($random_objects) . " total objects => " . count($objects) . " * " . count($versions) . " versions";
+$debug[] = "Objects: " . count($random_objects) . " records = " . count($objects_names) . " objects x " . count($versions) . " versions";
 
 // Randomize Objects
 shuffle($random_objects);
@@ -271,10 +286,10 @@ foreach ($results as $reviewer => $data) {
         $i++;
         list($object_name, $object_version) = getNameVersion($object);
         $rows[] = array(
-            'record_id' => $i,
-            'reviewer' => $reviewer,
-            'object_name' => $object_name,
-            'object_version' => $object_version
+            'record_id'                 => $i,
+            'redcap_data_access_group'  => $reviewer,
+            'object_name'               => $object_name,
+            'object_version'            => $object_version
         );
     }
 }
@@ -283,7 +298,7 @@ foreach ($unassigned['records'] as $object) {
     list($object_name, $object_version) = getNameVersion($object);
     $rows[] = array(
         'record_id' => $i,
-        'reviewer' => '',
+        'redcap_data_access_group' => '',
         'object_name' => $object_name,
         'object_version' => $object_version
     );

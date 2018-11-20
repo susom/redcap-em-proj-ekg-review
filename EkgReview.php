@@ -642,7 +642,9 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         # Get the file
         $results = array();
         foreach ($bucket->objects($options) as $obj) {
-            $results[] = $obj->name();
+            $name = $obj->name();
+            $ext = pathinfo($name, PATHINFO_EXTENSION);
+            if ($ext == "csv") $results[] = $obj->name();
         }
 
         return $results;
