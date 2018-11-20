@@ -29,22 +29,27 @@
     ],
     "project": [
       {
-        "name": "EKG Bucket Progress",
-        "icon": "gear",
+        "name": "EKG DAG Progress Bars",
+        "icon": "chart_bar",
         "url": "progress.php"
       },
       {
-        "name": "EKG Record Creator",
+        "name": "EKG Random Recordset Creator",
         "icon": "gear",
         "url": "recordset_creator.php"
       },
       {
-        "name": "EKG Bucket Contents",
-        "icon": "gear",
+        "name": "EKG GCP Bucket Contents",
+        "icon": "arrow_down",
         "url": "bucket_contents.php"
       },
       {
-        "name": "Test",
+        "name": "EKG Update Adjudication/QC Fields",
+        "icon": "arrow_refresh",
+        "url": "qc_adjudication_update.php"
+      },
+      {
+        "name": "EKG Test",
         "icon": "gear",
         "url": "test.php"
       }

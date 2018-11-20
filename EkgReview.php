@@ -14,6 +14,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
     use emLoggerTrait;
 
+
     public $group_id;       // DAG Group ID
     public $dag_name;       // DAG Name
 
@@ -24,17 +25,20 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     public $totalCountDag, $totalCompleteDag, $totalPercentDag;
 
 
-    public $unassignedRecords;      // Array of all unassigned records
-    public $availableRecords;       // Array of records specifically avaialble for next batch for current DAG user
+    const UNASSIGNED = "__unassigned__";
+    const COMPARE_FIELDS = array('q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q7','q8','q9','q9b','q10','q10b');
 
     function __construct($project_id = null)
     {
         parent::__construct();
         $this->ts_start = microtime(true);
-        //if (!empty($project_id)) {}
     }
 
 
+    /**
+     * Quick function to determine who belongs in the 'special view'
+     * @return bool
+     */
     function isDagUser() {
         global $project_id;
 
@@ -43,8 +47,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         } elseif (empty(USERID)) {
             $this->emDebug("USERID is not defined on page " . PAGE);
         } elseif (empty($this->group_id)) {
-            // Try to get the group id
-
             // Get User Rights for User
             $result = REDCap::getUserRights(USERID);
             $user_rights = isset($result[USERID]) ? $result[USERID] : NULL;
@@ -60,9 +62,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
 
     /**
-     * This loop does two things at once:
-     * - First, it determines which records have not been assigned
-     * - Second, it determines assigned count per group for progress bars
+     * Loop through all records to determine which records are unassigned and DAG progress per group
      */
     function doRecordAnalysis() {
 
@@ -96,7 +96,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $start_time             = $record['start_time'];
             $end_time               = $record['end_time'];
 
-            $group = empty($dag) ? "unassigned" : $dag;
+            $group = empty($dag) ? self::UNASSIGNED : $dag;
 
             // V2 Initialize array for each dag in result status
             if (!isset($rs[$group])) $rs[$group] = [
@@ -107,7 +107,8 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 "records"           => []
             ];
 
-            // V2 Increment counters
+            // Increment group counters
+
             $rs[$group]['total']++;
             if ($form_status == '2') $rs[$group]['total_complete']++;
             $duration = empty($end_time) ? 0 : strtotime($end_time) - strtotime($start_time);
@@ -116,7 +117,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             // Keep array of object names for active DAG
             if ($group == $this->dag_name) {
                 array_push($rs[$group]['object_names'], $object_name);
-            } elseif ($group == "unassigned") {
+            } elseif ($group == self::UNASSIGNED) {
                 array_push($rs[$group]['records'], $record);
             }
         }
@@ -130,24 +131,12 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $rs['duration']         += empty($data['duration']) ? 0 : (int) $data['duration'];
             $rs['total']            += $data['total'];
             $rs['total_complete']   += $data['total_complete'];
-            //$this->emDebug($data['duration'], $rs['duration']);
         }
         $rs["total_percent"] = $rs['total'] == 0 ? 100 : round($rs['total_complete'] / $rs['total'] * 100, 1);
 
         // Save to object
         $this->rs = $rs;
-
-        //// Save totals to object for both unassigned and current user's DAG
-        //$this->totalCount       = $rs["total"];
-        //$this->totalComplete    = $rs["total_complete"];
-        //$this->totalPercent     = $rs["total_percent"];
-        //
-        //$this->totalCountDag    = $rs[$this->dag_name]["total"];
-        //$this->totalCompleteDag = $rs[$this->dag_name]["total_complete"];
-        //$this->totalPercentDag  = $rs[$this->dag_name]["total_percent"];
-        //$this->emDebug("Record Summary", array_keys($rs));
-        //$this->emDebug("DAG Summary", $rs[$this->dag_name]);
-        //$this->emDebug("Total Duration", $rs['duration']);
+        //$this->emDebug("Record Summary", $rs);
     }
 
 
@@ -160,7 +149,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
         // Get the two relevant blocks of data
         $current_dag_object_names = $this->rs[$this->dag_name]['object_names'];
-        $unassigned_records = $this->rs['unassigned']['records'];
+        $unassigned_records = $this->rs[self::UNASSIGNED]['records'];
 
         // Build an available records array (key is name and value is record)
         $available_records = [];
@@ -209,7 +198,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
             $this->emDebug("Available Records", $available_records);
 
-            //$unassigned = $this->availableRecords;
             $batch_size = min(count($available_records), $this->getProjectSetting('batch-size'));
             $this->emDebug("Batch is $batch_size with " . count($available_records) . " records available...");
 
@@ -220,11 +208,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 // Transfer batch to this user
                 $records = array_slice($available_records,0,$batch_size);
 
-                //// DAG Name
-                //$unique_group_name = REDCap::getGroupNames(true, $this->group_id);
-                //
-                $record_ids = array();     // DEBUG ARRAY
-
+                $record_ids = array();
                 foreach ($records as $object_name => &$record) {
                     $record_ids[] = $record['record_id'];
                     $record['redcap_data_access_group'] = $this->dag_name;
@@ -430,16 +414,18 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // contains any required missing field validations
         // $this->emDebug("_GET", empty($_GET['__reqmsgpre']), $_GET) ;
 
-        if (!empty($this->group_id) && empty($_GET['__reqmsgpre'])) {
+        if ($this->isDagUser() && empty($_GET['__reqmsgpre'])) {
 
-            // Set end-time if empty
-            $q = REDCap::getData($project_id, 'json', array($record), array('record_id','end_time','ekg_review_complete'));
+            // Get recent record
+            $q = REDCap::getData($project_id, 'json', array($record));
             $results = json_decode($q,true);
-
             $this->emDebug("Saving record:",$results);
+
             if (isset($results[0]['end_time']) && empty($results[0]['end_time'])) {
+                // Set end-time and mark record as complete if it was empty
                 $results[0]['end_time'] = Date('Y-m-d H:i:s');
                 $results[0]['ekg_review_complete'] = 2;
+
                 $q = REDCap::saveData('json', json_encode($results));
                 $this->emDebug("Updating end_time/status", json_encode($results[0]), "Save Result", $q);
             }
@@ -449,6 +435,99 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $this->exitAfterHook();
         }
     }
+
+
+    /**
+     * Find differences between two records
+     * @param $r1
+     * @param $r2
+     * @return array
+     */
+    function findDifferences($r1, $r2) {
+        $field_diff = [];
+        foreach (self::COMPARE_FIELDS as $field) {
+            if ($r1[$field] !== $r2[$field]) array_push($field_diff, $field);
+        }
+        $this->emDebug("Comparing " . $r1['record_id'] . " with " . $r2['record_id'] . " => " . implode(",",$field_diff));
+        return $field_diff;
+    }
+
+
+    /**
+     * Update the records after we have two different versions to compare
+     * @param $r1
+     * @param $r2
+     * @param $type
+     * @return mixed
+     */
+    function updateDifferences($r1,$r2,$type) {
+        if ($type == "qc") {
+            $result_field = 'qc_result';
+            $detail_field = 'qc_result_detail';
+        } elseif ($type == "adjudication") {
+            $result_field = 'cross_reviewer_result';
+            $detail_field = 'cross_reviewer_result_detail';
+        } else {
+            $this->emError("Invalid Type:", $type);
+            return false;
+        }
+
+        $r1_cache = serialize($r1);
+        $r2_cache = serialize($r2);
+
+        $differences = $this->findDifferences($r1,$r2);
+
+        if (empty($differences)) {
+            // SAME
+            $result = "1";
+            $text = " matched";
+        } else {
+            // DIFFERENT
+            $result = "2";
+            $text = " differ at " . implode(",", $differences);
+        }
+
+        $r1[$result_field] = $result;
+        $r2[$result_field] = $result;
+        $r1[$detail_field] = "Record #" . $r2['record_id'] . $text;
+        $r2[$detail_field] = "Record #" . $r1['record_id'] . $text;
+
+        // Update if needed
+        $data = [];
+        if (serialize($r1) !== $r1_cache) {
+            $data[] = $r1;
+            $this->emDebug("Updating R1");
+        }
+        if (serialize($r2) !== $r2_cache) {
+            $data[] = $r2;
+            $this->emDebug("Updating R2");
+        }
+
+        if (empty($data)) {
+            return  "No $type change for records #" . $r1['record_id'] . " & #" .  $r2['record_id'] . " -$text";
+        } else {
+            $q = REDCap::saveData('json', json_encode($data));
+            if (!empty($q['errors'])) $this->emError("Error updating $type", $data, $q);
+            $this->emDebug("Update results",$q);
+
+            return "Updated $type for records #" . $r1['record_id'] . " & #" . $r2['record_id'] . " -$text";
+        }
+    }
+
+
+    /**
+     * Get all completed records
+     * @return mixed
+     */
+    function getAllCompleteRecords() {
+        $filter = "[ekg_review_complete] = '2'";
+        $q = REDCap::getData('json', null, null, null, null, false, true, false, $filter);
+        $records = json_decode($q,true);
+        $this->emDebug("Found " . count($records) . " complete records");
+        return $records;
+    }
+
+
 
 
     /**
