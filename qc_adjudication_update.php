@@ -8,8 +8,6 @@
 // Make a debug array
 $debug = [];
 
-
-
 // Step 1 - load all records
 $records = $module->getRecords();
 
@@ -64,7 +62,7 @@ if (!empty($debug)) {
         </button>
     </h4>
     <div class="collapse show" id="collapseDebug">
-        <pre><?echo print_r($debug,true) ?></pre>
+        <pre><?php echo implode("\n", $debug) ?></pre>
     </div>
     <?php
 }
