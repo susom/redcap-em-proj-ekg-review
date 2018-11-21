@@ -38,16 +38,18 @@ $module->emDebug("Made map of " . count($map) . " objects - here are two: ", arr
 // Step 4 - do some version comparisons
 foreach ($map as $object_name => $versions) {
 
+    $module->emDebug("In $object_name with versions: ", $versions);
+
     if (isset($versions[99]) && isset($versions[1])) {
         // we have a QC check
         $result = $module->updateDifferences($versions[1], $versions[99], "qc");
-        if ($result) $debug[] = "QC Comparison:\t$object_name\t" . $result;
+        if ($result !== false) $debug[] = "QC Comparison:\t$object_name\t" . $result;
     }
 
     if (isset($versions[1]) && isset($versions[2])) {
         // we have a adjudication check
         $result = $module->updateDifferences($versions[1], $versions[2], "adjudication");
-        if ($result) $debug[] = "Adjudication:\t$object_name\t" . $result;
+        if ($result !== false) $debug[] = "Adjudication: \t$object_name\t" . $result;
     }
 }
 
