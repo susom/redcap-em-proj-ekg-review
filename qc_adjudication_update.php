@@ -26,12 +26,13 @@ foreach ($records as $record) {
     $map[$object_name][$object_version] = $record;
 }
 $debug[] = "Found " . count($map) . " objects...";
+$module->emDebug("Made map of " . count($map) . " objects - here are two: ", array_slice($map,0,2));
 
-// Step 3 - prune the map to remove any object with only one version
-foreach ($map as $object_name => $versions) {
-    if (count($versions) == 1) unset($map[$object_name]);
-}
-$debug[] = "After filtering singletons, " . count($map) . " objects with more than one version remain...";
+//// Step 3 - prune the map to remove any object with only one version
+//foreach ($map as $object_name => $versions) {
+//    if (count($versions) == 1) unset($map[$object_name]);
+//}
+//$debug[] = "After filtering singletons, " . count($map) . " objects with more than one version remain...";
 
 
 // Step 4 - do some version comparisons
