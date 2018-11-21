@@ -11,7 +11,7 @@ $debug = [];
 // Step 1 - load all records
 $records = $module->getRecords();
 
-$debug[] = "Found " . count($records) . " records";
+$module->emDebug("Found " . count($records) . " records");
 
 // Step 2 - make a map array that has object_name => version => [ $records ]
 $map = [];
@@ -26,10 +26,11 @@ foreach ($records as $record) {
     $map[$object_name][$object_version] = $record;
 }
 $debug[] = "Found " . count($map) . " objects...";
+$this->emDebug("Map", $map);
 
 // Step 3 - prune the map to remove any object with only one version
 foreach ($map as $object_name => $versions) {
-    if (count($map[$object_name]) == 1) unset($map[$object_name]);
+    if (count($versions) == 1) unset($map[$object_name]);
 }
 $debug[] = "After filtering singletons, " . count($map) . " objects with more than one version remain...";
 
