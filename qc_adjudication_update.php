@@ -26,7 +26,6 @@ foreach ($records as $record) {
     $map[$object_name][$object_version] = $record;
 }
 $debug[] = "Found " . count($map) . " objects...";
-$this->emDebug("Map", $map);
 
 // Step 3 - prune the map to remove any object with only one version
 foreach ($map as $object_name => $versions) {
