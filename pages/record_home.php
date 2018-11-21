@@ -98,7 +98,7 @@ $overall_progress   = $this->getProgress();
                 $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
                 $batch_size = $this->getProjectSetting("batch-size");
 
-                if ($max_number_per_dag == 0 || $this->rs[$this->dag_name]['complete'] < $max_number_per_dag ) {
+                if ($max_number_per_dag == 0 || $this->rs[$this->dag_name]['total_complete'] < $max_number_per_dag ) {
                     // Still some available
                     ?>
                         <div class="alert alert-success">
