@@ -11,6 +11,7 @@ $debug = [];
 // Step 1 - load all records
 $records = $module->getRecords();
 
+$debug[] = "Found " . count($records) . " records";
 
 // Step 2 - make a map array that has object_name => version => [ $records ]
 $map = [];
