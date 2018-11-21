@@ -197,18 +197,28 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         if (isset($_POST['get_batch']) && $_POST['get_batch'] == 1)
         {
             $available_records = $this->getAvailableRecords();
-
             $this->emDebug("Available Records", $available_records);
 
-            $batch_size = min(count($available_records), $this->getProjectSetting('batch-size'));
-            $this->emDebug("Batch is $batch_size with " . count($available_records) . " records available...");
 
-            if ($batch_size == 0) {
+            // Batch size is smaller of available and bin size
+            $batch_size = $this->getProjectSetting('batch-size');
+            $this_batch_size = min(count($available_records), $batch_size);
+            $this->emDebug("Based on " . count($available_records) . " available records and batch size of $batch_size - this batch will be $this_batch_size");
+
+            // We may have to further reduce batch size in some cases based on per-group limits.
+            $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
+            if ($max_number_per_dag > 0) {
+                $num_left_this_dag = $max_number_per_dag - $this->rs[$this->dag_name]['total_complete'];
+                $this_batch_size = min($this_batch_size, $num_left_this_dag);
+                $this->emDebug("Based on max num per dag of $max_number_per_dag, there are $num_left_this_dag remaining slots in this dag, therefore this batch is $batch_size");
+            }
+
+            if ($this_batch_size == 0) {
                 // There are no more remaining - do nothing
                 $this->emLog(USERID . "'s request for new batch cannot be filled since there are no unassigned records available to assign");
             } else {
                 // Transfer batch to this user
-                $records = array_slice($available_records,0,$batch_size);
+                $records = array_slice($available_records,0, $this_batch_size);
 
                 $record_ids = array();
                 foreach ($records as $object_name => &$record) {
@@ -217,7 +227,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 }
 
                 $result = REDCap::saveData('json', json_encode($records));
-                $this->emLog("Moving " . $batch_size . " records to DAG $this->dag_name / " . $this->group_id);
+                $this->emLog("Moving " . $this_batch_size . " records to DAG $this->dag_name / " . $this->group_id);
                 if (!empty($result['errors'])) $this->emError("Error assigning to DAG", $result);
 
                 $this->emDebug("Batch record ids:", $record_ids);
