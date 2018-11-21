@@ -159,10 +159,12 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
             if (in_array($object_name, $current_dag_object_names)) {
                 // This object is already assigned to the dag user - only assign it again if it is version 99 - internal QC
+                $this->emDebug($object_name . " is already part of this dag");
                 if ($object_version == 99) $available_records[$object_name] = $record;
             } else {
                 // This object is NOT in the dag's existing records so it is available
                 $available_records[$object_name] = $record;
+                $this->emDebug($object_name . " is not in dag - can be used");
             }
         }
         $this->emDebug("Found " . count($available_records) . " of " . count($unassigned_records) . " records available for " . $this->dag_name);

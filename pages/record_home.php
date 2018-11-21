@@ -78,7 +78,7 @@ $overall_progress   = $this->getProgress();
             // Get available records
             $available_records = $this->getAvailableRecords();
 
-            if (count($availableRecords) == 0) {
+            if (count($available_records) == 0) {
                 // There are no more available records
                 ?>
                     <div class="alert alert-success text-center">
