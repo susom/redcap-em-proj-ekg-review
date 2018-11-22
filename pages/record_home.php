@@ -15,7 +15,7 @@ $overall_progress   = $this->getProgress();
 
 ?>
 
-<nav class="navbar  navbar-dark bg-dark navbar-inverse">
+<nav id="ekg_nav" class="navbar navbar-dark bg-dark navbar-inverse hidden">
     <a class="navbar-brand" href="#"><h3>EKG Review</h3></a>
     <ul class="nav navbar-expand navbar-nav navbar-right navbar-custom">
         <li class="nav-item active">
@@ -145,10 +145,19 @@ $overall_progress   = $this->getProgress();
 
 
 <style>
+
+    body { background-color: #e9ecef; }
+    .jumbotron { background-color: #ffffff; }
     div.alert {border-color: #666 !important;}
     .navbar {margin-bottom: 0; }
     .navbar-custom>li { display: inline-block; padding-left: 20px;}
     .navbar-custom .nav-link { font-size: 125%; }
+    #ekg_nav ul { display:inline-block; float:right;}
     /*.progress-detail {font-size: 10pt; color: #666}*/
     .progress {height: 25px; border: 1px solid #666; font-size: 125%; }
+    #pagecontainer { margin-top: 25px;}
 </style>
+
+<script>
+    $('#ekg_nav').insertBefore('#pagecontainer').show();
+</script>

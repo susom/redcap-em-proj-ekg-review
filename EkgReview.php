@@ -28,7 +28,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     const UNASSIGNED = "__unassigned__";
     const COMPARE_FIELDS = array('q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q7','q8','q9','q9b','q10','q10b');
 
-    function __construct($project_id = null)
+    function __construct()
     {
         parent::__construct();
         $this->ts_start = microtime(true);
@@ -164,7 +164,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             } else {
                 // This object is NOT in the dag's existing records so it is available
                 $available_records[$object_name] = $record;
-                $this->emDebug($object_name . " is not in dag - can be used");
+                //$this->emDebug($object_name . " is not in dag - can be used");
             }
         }
         $this->emDebug("Found " . count($available_records) . " of " . count($unassigned_records) . " records available for " . $this->dag_name);
@@ -191,7 +191,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             return;
         }
 
-        $this->emDebug(__FUNCTION__ . " on " . PAGE . " with: ", $_POST);
+        $this->emDebug(__FUNCTION__ . " on " . PAGE . " with: " . json_encode($_POST));
 
         // Handle 'get-batch' post
         if (isset($_POST['get_batch']) && $_POST['get_batch'] == 1)
@@ -210,7 +210,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             if ($max_number_per_dag > 0) {
                 $num_left_this_dag = $max_number_per_dag - $this->rs[$this->dag_name]['total_complete'];
                 $this_batch_size = min($this_batch_size, $num_left_this_dag);
-                $this->emDebug("Based on max num per dag of $max_number_per_dag, there are $num_left_this_dag remaining slots in this dag, therefore this batch is $batch_size");
+                $this->emDebug("Based on max num per dag of $max_number_per_dag, there are $num_left_this_dag remaining slots in this dag, therefore this batch is $this_batch_size");
             }
 
             if ($this_batch_size == 0) {
@@ -240,7 +240,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Handle 'go next'
         if (isset($_POST['score_next']) && $_POST['score_next'] == 1) {
             // Lets redirect to the next record for this user
-            $this->emDebug("Score next called for group " . $this->group_id);
+            $this->emDebug("Score next called for group " . $this->dag_name);
             $this->redirectToNextRecord($project_id, $this->group_id);
             $this->exitAfterHook();
             return;
@@ -391,7 +391,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Determine next record
         $logic = '[ekg_review_complete] = 0';
         $next_records = REDCap::getData($project_id, 'array', null, array('record_id', 'ekg_review_complete'), null, $group_id, false, true, false, $logic);
-        $this->emDebug("There are " . count($next_records) . " remaining for group $group_id...");
+        $this->emDebug("There are " . count($next_records) . " remaining for group " . $group_id . "...");
         if (empty($next_records)) {
             // There are none left - lets goto the homepage
             $url = APP_PATH_WEBROOT . "DataEntry/record_home.php?pid=" . $project_id . "&msg=" . htmlentities("All Records Complete");
@@ -630,7 +630,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
         # Get the bucket
         $bucket = $storage->bucket($bucketName);
-        $this->emDebug("Got Bucket: " . $bucket->name());
+        //$this->emDebug("Got Bucket: " . $bucket->name());
 
         # Get the file
         $object = $bucket->object($filename);
