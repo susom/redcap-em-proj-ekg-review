@@ -344,7 +344,7 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
             </button>
         </h4>
         <div class="collapse" id="collapseCSV">
-            <pre><?echo arrayToCsv($rows, true) ?></pre>
+            <pre><?php echo arrayToCsv($rows, true) ?></pre>
         </div>
         <?php
     }
@@ -361,7 +361,7 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
             </button>
         </h4>
         <div class="collapse" id="collapseAlert">
-            <pre><?echo print_r($alert,true) ?></pre>
+            <pre><?php echo print_r($alert,true) ?></pre>
         </div>
         <?php
     }
@@ -376,7 +376,7 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
             </button>
         </h4>
         <div class="collapse" id="collapseMissing">
-           <pre><?echo print_r($missing,true) ?></pre>
+           <pre><?php echo print_r($missing,true) ?></pre>
         </div>
         <?php
     }
@@ -391,7 +391,7 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
             </button>
         </h4>
         <div class="collapse" id="collapseDebug">
-            <pre><?echo print_r($debug,true) ?></pre>
+            <pre><?php echo print_r($debug,true) ?></pre>
         </div>
         <?php
     }
