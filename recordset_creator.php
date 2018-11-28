@@ -1,44 +1,6 @@
 <?php
 /** @var \Stanford\EkgReview\EkgReview $module */
 
-
-
-function getNameVersion($object) {
-    return array($object['object_name'], $object['object_version']);
-}
-
-function arraySwapAssoc($key1, $key2, $array) {
-    $newArray = array ();
-    foreach ($array as $key => $value) {
-        if ($key == $key1) {
-            $newArray[$key2] = $array[$key2];
-        } elseif ($key == $key2) {
-            $newArray[$key1] = $array[$key1];
-        } else {
-            $newArray[$key] = $value;
-        }
-    }
-    return $newArray;
-}
-
-function convertArrayToCsv($array) {
-    $csv = fopen('php://temp/maxmemory:' . (5 * 1024 * 1024), 'r+');
-    fputcsv($csv, $array);
-    rewind($csv);
-
-    // put it all in a variable
-    return stream_get_contents($csv);
-}
-
-
-
-
-
-
-
-
-
-
 require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 
 
@@ -55,14 +17,15 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 $bucket_name = $module->getProjectSetting('gcp-bucket-name');
 
 $raw_bucket_prefix = isset($_POST['bucket_prefix']) ? $_POST['bucket_prefix'] : "";
-$bucket_prefix = mb_ereg_replace("([^\w\s\d\-_~,;\[\]\(\).])", '', $raw_bucket_prefix);
+$bucket_prefix = mb_ereg_replace("([^\w\s\d\-_~,;\/\[\]\(\).])", '', $raw_bucket_prefix);
+if (strlen($bucket_prefix) > 0 && substr($bucket_prefix, -1) != "/") $bucket_prefix .= "/";
 
 ?>
     <h4>Recordset Creator: <?php echo $bucket_name . " " . $bucket_prefix ?></h4>
 <?php
 
 // We have a bucket prefix - get contents
-$bucket_contents = $module->getBucketContents(["prefix" => $bucket_prefix . "/"]);
+$bucket_contents = $module->getBucketContents(["prefix" => $bucket_prefix]);
 
 
 // Parse post if available
@@ -542,3 +505,37 @@ REDCap::logEvent("EKG Recordset Creator Run", implode("\n", $summary));
 
     ?>
 </div>
+
+
+
+
+<?php
+
+
+function getNameVersion($object) {
+    return array($object['object_name'], $object['object_version']);
+}
+
+function arraySwapAssoc($key1, $key2, $array) {
+    $newArray = array ();
+    foreach ($array as $key => $value) {
+        if ($key == $key1) {
+            $newArray[$key2] = $array[$key2];
+        } elseif ($key == $key2) {
+            $newArray[$key1] = $array[$key1];
+        } else {
+            $newArray[$key] = $value;
+        }
+    }
+    return $newArray;
+}
+
+function convertArrayToCsv($array) {
+    $csv = fopen('php://temp/maxmemory:' . (5 * 1024 * 1024), 'r+');
+    fputcsv($csv, $array);
+    rewind($csv);
+
+    // put it all in a variable
+    return stream_get_contents($csv);
+}
+

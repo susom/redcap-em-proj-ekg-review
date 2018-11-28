@@ -4,7 +4,9 @@
 require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 
 $raw_bucket_prefix = isset($_POST['bucket_prefix']) ? $_POST['bucket_prefix'] : "";
-$bucket_prefix = mb_ereg_replace("([^\w\s\d\-_~,;\[\]\(\).])", '', $raw_bucket_prefix);
+$bucket_prefix = mb_ereg_replace("([^\w\s\d\-_~,;\/\[\]\(\).])", '', $raw_bucket_prefix);
+if (strlen($bucket_prefix) > 0 && substr($bucket_prefix, -1) != "/") $bucket_prefix .= "/";
+
 $bucket_name = $module->getProjectSetting('gcp-bucket-name');
 
 ?>
@@ -30,7 +32,7 @@ $bucket_name = $module->getProjectSetting('gcp-bucket-name');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Display records in bucket
-    $contents = $module->getBucketContents(["prefix" => $bucket_prefix . "/"]);
+    $contents = $module->getBucketContents(["prefix" => $bucket_prefix]);
 
     ?>
     <hr>
