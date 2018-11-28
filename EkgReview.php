@@ -648,7 +648,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
 
     /**
-     * Get all files from the google bucket
+     * Get all CSV files from the google bucket
      * @return array
      */
     function getBucketContents($options = array()) {
