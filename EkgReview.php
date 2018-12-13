@@ -26,7 +26,30 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
 
     const UNASSIGNED = "__unassigned__";
-    const COMPARE_FIELDS = array('q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q7','q8','q9','q9b','q10','q10b');
+    // Get array of values for question in $pair_field;
+    const QUESTION_FIELDS = [ "q1","q2","q3","q4","q5","q6___0","q6___1","q6___2","q6___3","q6___4","q7","q8","q9","q9b","q10","q10b" ];
+    const COMPARE_FIELDS  = [ 'q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q7','q8','q9','q9b','q10','q10b' ];
+    const TB_FIELD_MAP = [
+        'tb_q1'     => 'q1',
+        'tb_q2'     => 'q2',
+        'tb_q3'     => 'q3',
+        'tb_q4'     => 'q4',
+        'tb_q5'     => 'q5',
+        'tb_q6_0'   => 'q6___0',
+        'tb_q6_1'   => 'q6___1',
+        'tb_q6_2'   => 'q6___2',
+        'tb_q6_3'   => 'q6___3',
+        'tb_q6_4'   => 'q6___4',
+        'tb_q7'     => 'q7',
+        'tb_q8'     => 'q8',
+        'tb_q9'     => 'q9',
+        'tb_q9b'    => 'q9b',
+        'tb_q10'    => 'q10',
+        'tb_q10b'   => 'q10b'
+    ];
+    const TB_FORM = 'tie_breaker';
+    const QC_FORM = 'internal_qc';
+    const ADJ_FORM = 'cross_review';
 
     function __construct()
     {
@@ -73,7 +96,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         $logic = NULL;
         $result = REDCap::getData('json', null,
             array('record_id', 'start_time', 'end_time', 'object_name',
-                'object_version', 'adjudication_required', 'qc_result', 'ekg_review_complete'),
+                'object_version', 'adjudication_required', 'qc_results', 'ekg_review_complete'),
             null, null, false, true, false, $logic);
         $records = json_decode($result,true);
 
@@ -92,7 +115,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $object_version         = $record['object_version'];
             $form_status            = $record['ekg_review_complete'];
             $adjudication_required  = $record['adjudication_required___1'];
-            $qc_result              = $record['qc_result'];
+            $qc_results              = $record['qc_results'];
             $start_time             = $record['start_time'];
             $end_time               = $record['end_time'];
 
@@ -375,6 +398,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped progress-black" style="width:<?php echo $progress_array['percent'] ?>%">
                         <?php echo $progress_array['percent'] ?>%
+                    </div>
                 </div>
             </div>
         <?php
@@ -450,19 +474,25 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
 
     /**
-     * Find differences between two records
-     * @param $r1
-     * @param $r2
-     * @return array
+     * Analyxe the Tie Breaker=
+     *  The tie breaker reacord (v3) is made by duplicating record v1 or v2.
+     *  - when it is rendered in the UI - we only show those fields are at different or missing data
+     * @param $versions
      */
-    function findDifferences($r1, $r2) {
-        $field_diff = [];
-        foreach (self::COMPARE_FIELDS as $field) {
-            if ($r1[$field] !== $r2[$field]) array_push($field_diff, $field);
+    function doTieBreaker($versions) {
+        $r1 = $versions[1];
+        $r2 = $versions[2];
+        $r3 = $versions[3];
+
+        // If tie breaker form is complete, then we are done.
+        if ($r3[self::TB_FORM . '_complete'] != 2) {
+
+            // When this was rendered, we used the cross_reviewer_results
+            // to 'freeze' certain questions
+            // TODO : this is incomplete for now
         }
-        $this->emDebug("Comparing " . $r1['record_id'] . " with " . $r2['record_id'] . " => " . implode(",",$field_diff));
-        return $field_diff;
     }
+
 
 
     /**
@@ -475,63 +505,112 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     function updateDifferences($r1,$r2,$type) {
         if ($type == "qc") {
             $pair_field   = 'qc_pair_record_id';
-            $result_field = 'qc_result';
-            $detail_field = 'qc_result_detail';
+            $result_field = 'qc_results';
+            $detail_field = 'qc_results_detail';
+            $form         = 'internal_qc_complete';
         } elseif ($type == "adjudication") {
             $pair_field   = 'cross_reviewer_pair_record_id';
-            $result_field = 'cross_reviewer_result';
+            $result_field = 'cross_reviewer_results';
             $detail_field = 'cross_reviewer_result_detail';
+            $form         = 'cross_review_complete';
         } else {
             $this->emError("Invalid Type:", $type);
             return false;
         }
 
-        $r1_cache = serialize($r1);
-        $r2_cache = serialize($r2);
+        $update = false;
+        $updates = [];
 
         // In all cases, we will make sure their pair record ids are identified
-        $r1[$pair_field] = $r2['record_id'];
-        $r2[$pair_field] = $r1['record_id'];
-        $text = " - update $type pair record id";
+        if ( $r1[$pair_field] != $r2['record_id'] || $r2[$pair_field] != $r1['record_id'] ) {
+            $r1[$pair_field] = $r2['record_id'];
+            $r2[$pair_field] = $r1['record_id'];
+
+            $this->emDebug("Updating $pair_field");
+
+            $update     = true;
+            $updates[]  = "Updating pair records";
+        };
 
         // If both records are complete, then we will look at their differences
         if ($r1['ekg_review_complete'] == '2' && $r2['ekg_review_complete'] == '2') {
-            $differences = $this->findDifferences($r1,$r2);
 
-            if (empty($differences)) {
-                // SAME
-                $result = "1";
-                $text = " - matched";
-            } else {
-                // DIFFERENT
-                $result = "2";
-                $text = " - differ at " . implode(",", $differences);
+            // SEE IF THIS COMPARISON HAS ALREADY BEEN DONE
+            // To trigger a re-comparison, just uncheck the 'done' box for one of the records
+            if ($r1[$result_field . "___" . "done"] != "1"
+                    || $r2[$result_field . "___" . "done"] != "1"
+                    || $r1[$form] != "2"
+                    || $r2[$form] != "2"
+            ) {
+                // UPDATE THE DONE CHECKBOX
+                $results = [
+                    $result_field . "___" . "done"  => "1",
+                    $form                           => "2"
+                ];
+
+                $update = true;
+                $updates[] = "Both Done";
+
+                // LETS BUILD THE DETAIL CHECKBOX FIELD AND KEEP TRACK OF DIFFERENCES
+                $differences = [];
+                foreach (self::QUESTION_FIELDS as $opt) {
+                    $key = $result_field . "___" . $opt;
+
+                    // Sanity check to make sure the field is defined (should always be true)
+                    if (!isset($r1[$key])) {
+                        $this->emError("Missing option: $key");
+                        continue;
+                    }
+
+                    // Make sure we are comparing this field - for example, we might not want to compare
+                    // Numerical results from the 9b and 10b questions
+                    if (!in_array($opt, self::COMPARE_FIELDS)) {
+                        $this->emDebug("Skipping option $opt as it is not defined in COMPARE_FIELDS");
+                        continue;
+                    }
+
+                    // Compare as boolean result
+                    $match = ($r1[$opt] === $r2[$opt]);
+
+                    // Record a list of differences
+                    if (!$match) $differences[] = $opt;
+
+                    // Convert match to string (same as redcap)
+                    $match_val = strval((int)$match);   // "1" for True, "0" for false
+
+                    //See if we need to update
+                    if ( $r1[$key] != $match_val || $r2[$key] != $match_val ) {
+                        $r1[$key] = $r2[$key] = $match_val;
+                        $update = true;
+                        $updates[] = $opt . "=" . $match_val;
+                    }
+                }
+
+                $detail_val = implode(",",$differences);
+
+                if ( $r1[$detail_field] != $detail_val || $r2[$detail_field] != $detail_val ) {
+                    $results[$detail_field] = $detail_val;
+                    $update = true;
+                    $updates[] = "detail_field updated";
+                }
+
+                // Merge updates into $r1 and $r2
+                $r1 = array_merge($r1, $results);
+                $r2 = array_merge($r2, $results);
             }
-            $r1[$result_field] = $result;
-            $r2[$result_field] = $result;
-            $r1[$detail_field] = "Record #" . $r2['record_id'] . $text;
-            $r2[$detail_field] = "Record #" . $r1['record_id'] . $text;
         }
 
         // Update database if records changed
-        $data = [];
-        if (serialize($r1) !== $r1_cache) {
-            $data[] = $r1;
-            $this->emDebug("Updating R1");
-        }
-        if (serialize($r2) !== $r2_cache) {
-            $data[] = $r2;
-            $this->emDebug("Updating R2");
-        }
-
-        if (empty($data)) {
-            return  false; //"No change"; //for records #" . $r1['record_id'] . " & #" .  $r2['record_id'] . "$text";
-        } else {
+        if ($update) {
+            $data = [ $r1, $r2 ];
             $q = REDCap::saveData('json', json_encode($data));
             if (!empty($q['errors'])) $this->emError("Error updating $type", $data, $q);
+
             $this->emDebug("Update results",$q);
 
-            return "Updated $type - #" . $r1['record_id'] . " & #" . $r2['record_id'] . "$text";
+            return "#" . $r1['record_id'] . " & #" . $r2['record_id'] . "\t" . implode(", ", $updates);
+        } else {
+            return false;
         }
     }
 
@@ -700,6 +779,15 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             header("Location: $url");
         }
 
+    }
+
+    /** A recursive ksort */
+    function ksort_recursive(&$array)
+    {
+        if (is_array($array)) {
+            ksort($array);
+            array_walk($array, 'ksort_recursive');
+        }
     }
 
 }

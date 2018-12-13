@@ -76,9 +76,6 @@
     background-color: #333;
 }
 
-
-
-
 #buttonHelpInfo {
     padding: 0;
     vertical-align:top;
@@ -96,7 +93,6 @@
     cursor: help;
     /*10px 10px 10px;*/
 }
-
 
 #moveButtons .btn-label {
     font-size: 10px;

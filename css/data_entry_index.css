@@ -26,6 +26,8 @@ div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child:after
 }
 
 
+/** SHAZAM STUFF **/
+
 /* TABLE CLEANUP */
 #questiontable {
     background-color: #fff;
@@ -56,7 +58,15 @@ div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child:after
     margin-bottom: 3px;
     color: #FFF;
     background-color: #337ab7;
+    width: 285px;
 }
+
+
+.d-flex.disabled {
+    opacity: 0.5;
+    background-color: #ddd;
+}
+
 
 .resetLinkParent {
     margin-top: 5px;
@@ -86,6 +96,11 @@ div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child:after
 
 #formSaveTip { display: none !important; }
 
+#submit-btn-saverecord {
+    float: right;
+    width: 50%;
+}
+button[name="submit-btn-cancel"] { float:left; }
 
 #contextMsg { display:none; }
 td.context_msg { display:none; }
@@ -112,25 +127,29 @@ div.progress{
 }
 
 
-/* Hide the Form Status stuff */
+
+
+/* Hide some fields from the form during data entry */
 #ekg_review_complete-sh-tr, #ekg_review_complete-tr { display: none; }
 
 #record_id-tr, #reviewer-tr, #start_time-tr, #end_time-tr, #object_name-tr, #object_version-tr,
-#cross_reviewer_pair_record_id-sh-tr, #cross_reviewer_result-tr, #cross_reviewer_result_detail-tr, #cross_reviewer_pair_record_id-tr,
-#adjudication_result-tr,
-#qc_pair_record_id-sh-tr, #qc_result-tr, #qc_result_detail-tr, #qc_pair_record_id-tr,
 #q1-sh-tr { display: none !important; }
 
+/*#cross_reviewer_pair_record_id-sh-tr,*/
+/*#cross_reviewer_pair_record_id-tr,*/
+/*#cross_reviewer_results-tr,*/
+/*#cross_reviewer_results_detail-tr,*/
+/*#adjudication_results-tr,*/
+
+/*#qc_pair_record_id-sh-tr,*/
+/*#qc_pair_record_id-tr,*/
+/*#qc_results-tr, #qc_results_detail-tr,*/
 
 
-/* Hide table at first */
+
+/* Hide table at first so it can be eased into view */
 #questiontable { opacity: 0; }
 
-
+/* Dont show some buttons */
 #__DELETEBUTTONS__-tr, #__LOCKRECORD__-tr { display:none; }
 
-#submit-btn-saverecord {
-    float: right;
-    width: 50%;
-}
-button[name="submit-btn-cancel"] { float:left; }

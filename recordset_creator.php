@@ -172,51 +172,72 @@ if (count($bucket_contents) > $object_count) {
     $debug[] = "Using all " . count($bucket_contents) . " csv objects from GCP bucket";
 }
 
-// Convert object names into something with name and version
-$random_objects = array();
+// // Convert object names into something with name and version
+// $random_objects = array();
+//
+// foreach ($object_names as $object_name) {
+//
+//     if (!in_array($object_name, $bucket_contents)) {
+//         array_push($missing, "Object '$object_name' is not present in gcp bucket");
+//     }
+//
+//     foreach ($versions as $object_version) {
+//         $random_objects[] = array('object_name' => $object_name, 'object_version' => $object_version);
+//     }
+// }
+
+
+
+
+// A new array that contains $object_name => $versions...
+$objects = [];
 foreach ($object_names as $object_name) {
-
-    if (!in_array($object_name, $bucket_contents)) {
-        array_push($missing, "Object '$object_name' is not present in gcp bucket");
-    }
-
-    foreach ($versions as $object_version) {
-        $random_objects[] = array('object_name' => $object_name, 'object_version' => $object_version);
-    }
+    $objects[$object_name] = $versions;
 }
+/*
+ * Format:  "obj.name" => [ 1, 2 ];
+ */
+
+
 
 
 $debug[] = "Reviewers: " . implode(",", $reviewers);
-$debug[] = "Objects: " . count($random_objects) . " records = " . count($object_names) . " objects x " . count($versions) . " versions";
+// $debug[] = "Objects: " . count($random_objects) . " records = " . count($object_names) . " objects x " . count($versions) . " versions";
+
+$debug[] = "Object versions: " . count($objects);
 
 // Randomize Objects
-shuffle($random_objects);
-$debug[] = "Objects Randomized";
+// shuffle($random_objects);
+// $debug[] = "Objects Randomized";
 
-/*
-//FORMAT
-[
-   "one" => [
-        "records" => [],
-        "object_names" => [],
-        "version_counts" => [
-            "1" => 0,
-            "2" => 0
-        ]
-    ],
-    ...
-*/
+// /*
+// //FORMAT
+// [
+//    "one" => [
+//         "records" => [],
+//         "object_names" => [],
+//         "version_counts" => [
+//             "1" => 0,
+//             "2" => 0
+//         ]
+//     ],
+//     ...
+// */
 
 
-$results = [];
+
+// Initialize version counter:
 $version_counts = [];
 foreach ($versions as $version) {
     $version_counts[$version] = 0;
 }
 
+
 // Prepare destination structure
+$results = [];
 foreach ($reviewers as $reviewer) {
     $results[$reviewer] = [
+        "versions"       => [],
         "records"        => [],
         "object_names"   => [],
         "version_counts" => $version_counts
@@ -231,79 +252,104 @@ $unassigned = [
 ];
 
 
-// Loop through records and assign to a group
-foreach ($random_objects as $object) {
-    list($object_name, $object_version) = getNameVersion($object);
+// Loop through records and assign to a dag/group
+foreach ($objects as $object_name => $versions) {
+    foreach ($versions as $version) {
 
-    $assigned = false;
+        // Randomize the reviewers
+        shuffle($reviewers);
 
-    // Try to assign to a reviewer
-    foreach ($reviewers as $reviewer) {
+        $object = [
+            "object_name" => $object_name,
+            "object_version"    => $version
+        ];
 
-        if (count($results[$reviewer]["object_names"]) >= $initial_allocation_per_reviewer) {
-            //$debug[] = "$reviewer full";
-            continue;   // Next Reviewer
+        // Try to assign to a reviewer
+        $assigned = false;
+        foreach ($reviewers as $reviewer) {
+
+            if (count($results[$reviewer]["object_names"]) >= $initial_allocation_per_reviewer) {
+                //$debug[] = "$reviewer full";
+                continue;   // Next Reviewer
+            }
+
+            if (in_array($object_name, $results[$reviewer]["object_names"])) {
+                //$debug[] = $object_name . " already in $reviewer bin";
+                continue;   // Next Reviewer
+            }
+
+            if ($results[$reviewer]["version_counts"][$version] >= $max_initial_allocation_per_version) {
+                //$debug[] = "$reviewer has maximum number of $object_version records";
+                continue;   // Next Reviewer
+            }
+
+            array_push($results[$reviewer]["records"], $object);
+            array_push($results[$reviewer]["object_names"], $object_name);
+            $results[$reviewer]["version_counts"][$version]++;
+            //$debug[] = "$object_name : $object_version added to $reviewer bin";
+            // Stop the foreach loop
+            $assigned = true;
+            break;
         }
 
-        if (in_array($object_name, $results[$reviewer]["object_names"])) {
-            //$debug[] = $object_name . " already in $reviewer bin";
-            continue;   // Next Reviewer
+        // Add object-version to unassigned bin
+        if ($assigned == false) {
+            // Assign to 'unused' group
+            array_push($unassigned["records"], $object);
+            array_push($unassigned["object_names"], $object_name);
+            $unassigned["version_counts"][$version]++;
+            //$debug[] = "$object_name : $object_version added to $reviewer bin";
         }
 
-        if ($results[$reviewer]["version_counts"][$object_version] >= $max_initial_allocation_per_version) {
-            //$debug[] = "$reviewer has maximum number of $object_version records";
-            continue;   // Next Reviewer
-        }
-
-        array_push($results[$reviewer]["records"], $object);
-        array_push($results[$reviewer]["object_names"], $object_name);
-        $results[$reviewer]["version_counts"][$object_version]++;
-        //$debug[] = "$object_name : $object_version added to $reviewer bin";
-        // Stop the foreach loop
-        $assigned = true;
-        break;
     }
-
-    // Add unassigned records to unassigned bin
-    if ($assigned == false) {
-        // Assign to 'unused' group
-        array_push($unassigned["records"], $object);
-        array_push($unassigned["object_names"], $object_name);
-        $unassigned["version_counts"][$object_version]++;
-        //$debug[] = "$object_name : $object_version added to $reviewer bin";
-    }
-
-
-
-
 }
 
 //$debug[] = "Final Bins";
 //$debug[] = $results;
 
 
-//// Add QC Records
+// Add QC Records
 foreach ($results as $reviewer => $data) {
-    $v1_objects = array();
 
     // Get all of the version 1 records per reviewer
-    foreach ($data['records'] as $object) {
-        if ($object['object_version'] == 1) $v1_objects[] = $object;
+    $v1_objects = array();
+    foreach ($data['records'] as $i => $object) {
+        if ($object['object_version'] == 1) $v1_objects[$i] = $object;
     }
 
     // slice max of count and $initial_qc_per_reviewer and duplicate as object 99.
-    $v1_qc = array_slice($v1_objects, 0, min($initial_qc_per_reviewer, count($v1_objects)));
+    $v1_qc = array_slice($v1_objects, 0, min($initial_qc_per_reviewer, count($v1_objects)), true);
 
-    foreach ($v1_qc as $object) {
+    // Make a new array shifting the version number and the index
+    $v99 = [];
+    foreach ($v1_qc as $i => $object) {
         $object['object_version'] = 99;
-        array_push($results[$reviewer]["records"], $object);
+
+        // Find a new unique index
+        do {
+            $index = rand(20, 50) + $i;
+        } while( isset($v99[$index]) );
+        $v99[$index] = $object;
     }
-    $results[$reviewer]["version_counts"]["99"] = count($v1_qc);
+
+    // if ($reviewer == 'a') $module->emDebug(json_encode(array_keys($v1_qc)), json_encode(array_keys($new_v99)));
+
+    $new_records = [];
+    $max_index = max(max(array_keys($v99)), max(array_keys($data['records'])));
+    for ( $i=0; $i <= $max_index; $i++ ) {
+        if (isset($data['records'][$i])) $new_records[] = $data['records'][$i];
+        if (isset($v99[$i]))             $new_records[] = $v99[$i];
+    }
+
+    $results[$reviewer]["version_counts"]["99"] = count($v99);
+    $results[$reviewer]["records"] = $new_records;
 
     // Shuffle records for each reviewer
-    shuffle($results[$reviewer]["records"]);
+    // shuffle($results[$reviewer]["records"]);
+    // $debug[] = "Adding " . count($v1_qc) . " objects and randomizing to $reviewer";
 
-    $debug[] = "Adding " . count($v1_qc) . " objects and randomizing to $reviewer";
+    if ($reviewer == 'a') $module->emDebug($results[$reviewer]["records"]);
+
 }
 
 //$debug[] = "Results 1";
@@ -539,3 +585,17 @@ function convertArrayToCsv($array) {
     return stream_get_contents($csv);
 }
 
+
+// NOT USED
+function insertIntoAssocArrayAfterIndex(&$array, $element, $index) {
+    // Step 1
+    $keys = array_keys($array);
+
+
+
+    global $module;
+    $module->emDebug("KEYS", $keys);
+
+
+
+};
