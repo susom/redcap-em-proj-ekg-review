@@ -42,102 +42,127 @@ $overall_progress   = $this->getProgress();
             <img src="<?php echo $this->getUrl("assets/logo.png") ?>" />
         </div>
         <br>
-        <p class="text-center">Thank you for your assistance with the EKG Scoring.
-        </p>
-
         <?php
+            // HANDLE HEADER
+            $header_text = $this->getProjectSetting('header-text');
+            if (!empty($header_text)) echo "<div>" . $header_text . "</div>";
 
-        if ($dag_progress['percent'] != 100) {
-            ?>
-                <p class="text-center">
-                    You may stop at any time and return to this page to resume.
+
+            // HANDLE DEACTIVATE
+            if ($this->getProjectSetting('deactivate-reviews') == 1) {
+                // Reviews are not active
+                ?>
+                    <p class="text-center">
+                        <strong>EKG reviews are currently suspended.</strong>
+                    </p>
+                <?php
+            } else {
+                ?>
+
+
+                <p class="text-center">Thank you for your assistance with the EKG Scoring.
                 </p>
-                <p>
+
+                <?php
+
+                if ($dag_progress['percent'] != 100) {
+                    ?>
+                    <p class="text-center">
+                        You may stop at any time and return to this page to resume.
+                    </p>
+                    <p>
                     <div class="alert alert-secondary ml-4 mr-4">
                         <table>
                             <tr>
                                 <td>
-                                    <h4><i class="fas fa-hand-point-right"></i> </h4>
+                                    <h4><i class="fas fa-hand-point-right"></i></h4>
                                 </td>
                                 <td class="text-left pl-3">
                                     Hint: you can use 'hotkeys' to quickly navigate the EKG with your keyboard.<br>
-                                    Hold the SHIFT and press the ARROW keys - LEFT or RIGHT to pan and UP/DOWN to adjust the gain
+                                    Hold the SHIFT and press the ARROW keys - LEFT or RIGHT to pan and UP/DOWN to adjust
+                                    the gain
                                 </td>
                             </tr>
                         </table>
                     </div>
-                </p>
+                    </p>
 
-                <form method="POST">
-                    <div class="text-center">
-                        <button name="score_next" value="1" class="btn btn-primary btn-lg">Score Next EKG</button>
-                    </div>
-                </form>
-            <?php
-        } else {
-            // Get available records
-            $available_records = $this->getAvailableRecords();
-
-            if (count($available_records) == 0) {
-                // There are no more available records
-                ?>
-                    <div class="alert alert-success text-center">
-                        <div class="d-flex">
-                            <div>
-                                <i style='font-size: 30pt;' class="fas fa-smile-wink mr-4"></i>
-                            </div>
-                            <div class="d-flex w-100 flex-grow-1 text-center"><b>Congratulations - there are no more unassigned EKGs at this moment.
-                                    Your work is done for now but additional EKGs could be added at a later date.</b>
-                            </div>
+                    <form method="POST">
+                        <div class="text-center">
+                            <button name="score_next" value="1" class="btn btn-primary btn-lg">Score Next EKG</button>
                         </div>
-                    </div>
-                <div class="text-center"><b>Click on the 'My Projects' link on the nav-bar to return to REDCap</b></div>
-                <?php
-            } else {
-                // There are unassigned records remaining
-                $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
-                $batch_size = $this->getProjectSetting("batch-size");
-
-                if ($max_number_per_dag == 0 || $this->rs[$this->dag_name]['total_complete'] < $max_number_per_dag ) {
-                    // Still some available
-                    ?>
-                        <div class="alert alert-success">
-                            <h6 class="text-center">
-                                Additional EKGs need to be reviewed.
-                            </h6>
-                            <h6 class="text-center">
-                                Please press the button below to claim the
-                                the next batch of up to <?php echo $batch_size?> records.
-                            </h6>
-                            <br/>
-                            <form method="POST">
-                                <div class="text-center">
-                                    <button name="get_batch" value="1" class="btn btn-success btn-lg">Get the Next Batch</button>
-                                </div>
-                            </form>
-                        </div>
+                    </form>
                     <?php
                 } else {
-                    // Dag has exceeded max allowed
-                    ?>
-                        <div class="alert alert-success">
-                            <p class="text-center">
-                                Thank you for reviewing the maximum number of EKGs permitted by your group.
-                            </p>
+                    // Get available records
+                    $available_records = $this->getAvailableRecords();
+
+                    if (count($available_records) == 0) {
+                        // There are no more available records
+                        ?>
+                        <div class="alert alert-success text-center">
+                            <div class="d-flex">
+                                <div>
+                                    <i style='font-size: 30pt;' class="fas fa-smile-wink mr-4"></i>
+                                </div>
+                                <div class="d-flex w-100 flex-grow-1 text-center"><b>Congratulations - there are no more
+                                        unassigned EKGs at this moment.
+                                        Your work is done for now but additional EKGs could be added at a later
+                                        date.</b>
+                                </div>
+                            </div>
                         </div>
-                    <?php
+                        <div class="text-center"><b>Click on the 'My Projects' link on the nav-bar to return to
+                                REDCap</b></div>
+                        <?php
+                    } else {
+                        // There are unassigned records remaining
+                        $max_number_per_dag = $this->getProjectSetting("max-number-per-dag");
+                        $batch_size = $this->getProjectSetting("batch-size");
+
+                        if ($max_number_per_dag == 0 || $this->rs[$this->dag_name]['total_complete'] < $max_number_per_dag) {
+                            // Still some available
+                            ?>
+                            <div class="alert alert-success">
+                                <h6 class="text-center">
+                                    Additional EKGs need to be reviewed.
+                                </h6>
+                                <h6 class="text-center">
+                                    Please press the button below to claim the
+                                    the next batch of up to <?php echo $batch_size ?> records.
+                                </h6>
+                                <br/>
+                                <form method="POST">
+                                    <div class="text-center">
+                                        <button name="get_batch" value="1" class="btn btn-success btn-lg">Get the Next
+                                            Batch
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            <?php
+                        } else {
+                            // Dag has exceeded max allowed
+                            ?>
+                            <div class="alert alert-success">
+                                <p class="text-center">
+                                    Thank you for reviewing the maximum number of EKGs permitted by your group.
+                                </p>
+                            </div>
+                            <?php
+                        }
+                    }
                 }
+                ?>
+
+                <br/>
+
+                <?php
+                // Render progress bars for this user:
+                $this->renderProgressArea($dag_progress, "Your Progress");
+                $this->renderProgressArea($overall_progress, "Overall Study Progress");
             }
-        }
-        ?>
-
-        <br/>
-
-        <?php
-            // Render progress bars for this user:
-            $this->renderProgressArea($dag_progress, "Your Progress");
-            $this->renderProgressArea($overall_progress, "Overall Study Progress");
-        ?>
+            ?>
 
     </div>
 </main>
