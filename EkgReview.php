@@ -509,7 +509,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      * @param $type
      * @return mixed
      */
-    function updateDifferences($r1,$r2,$type) {
+    function updateDifferences(&$r1,&$r2,$type) {
         if ($type == "qc") {
             $pair_field   = 'qc_pair_record_id';
             $result_field = 'qc_results';
@@ -611,7 +611,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         if ($update) {
             $data = [ $r1, $r2 ];
             $q = REDCap::saveData('json', json_encode($data));
-            if (!empty($q['errors'])) $this->emError("Error updating $type", $data, $q);
+            if (!empty($q['errors'])) $this->emError("Error updating $type", $data, $r1, $r2, $q);
 
             $this->emDebug("Update results",$q);
 
