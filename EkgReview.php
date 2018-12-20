@@ -518,7 +518,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         } elseif ($type == "adjudication") {
             $pair_field   = 'cross_reviewer_pair_record_id';
             $result_field = 'cross_reviewer_results';
-            $detail_field = 'cross_reviewer_result_detail';
+            $detail_field = 'cross_reviewer_results_detail';
             $form         = 'cross_review_complete';
         } else {
             $this->emError("Invalid Type:", $type);
