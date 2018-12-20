@@ -1,22 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="EKG Review" AsOfDateTime="2018-08-17T08:30:39" CreationDateTime="2018-08-17T08:30:39" SourceSystem="REDCap" SourceSystemVersion="8.6.4">
-<Study OID="Project.EKGReview">
+<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:redcap="https://projectredcap.org" xsi:schemaLocation="http://www.cdisc.org/ns/odm/v1.3 schema/odm/ODM1-3-1.xsd" ODMVersion="1.3.1" FileOID="000-00-0000" FileType="Snapshot" Description="EKG Project" AsOfDateTime="2018-12-19T16:52:08" CreationDateTime="2018-12-19T16:52:08" SourceSystem="REDCap" SourceSystemVersion="8.9.3">
+<Study OID="Project.EKGProject">
 <GlobalVariables>
-	<StudyName>EKG Review</StudyName>
-	<StudyDescription>This file contains the metadata, events, and data for REDCap project "EKG Review".</StudyDescription>
-	<ProtocolName>EKG Review</ProtocolName>
+	<StudyName>EKG Project</StudyName>
+	<StudyDescription>This file contains the metadata, events, and data for REDCap project "EKG Project".</StudyDescription>
+	<ProtocolName>EKG Project</ProtocolName>
 	<redcap:RecordAutonumberingEnabled>1</redcap:RecordAutonumberingEnabled>
-	<redcap:CustomRecordLabel></redcap:CustomRecordLabel>
+	<redcap:CustomRecordLabel>[reviewer] [object_version]</redcap:CustomRecordLabel>
 	<redcap:SecondaryUniqueField></redcap:SecondaryUniqueField>
 	<redcap:SchedulingEnabled>0</redcap:SchedulingEnabled>
 	<redcap:Purpose>0</redcap:Purpose>
 	<redcap:PurposeOther></redcap:PurposeOther>
 	<redcap:ProjectNotes></redcap:ProjectNotes>
 </GlobalVariables>
-<MetaDataVersion OID="Metadata.EKGReview_2018-08-17_0830" Name="EKG Review" redcap:RecordIdField="record_id">
+<MetaDataVersion OID="Metadata.EKGProject_2018-12-19_1652" Name="EKG Project" redcap:RecordIdField="record_id">
 	<FormDef OID="Form.ekg_review" Name="EKG Review" Repeating="No" redcap:FormName="ekg_review">
 		<ItemGroupRef ItemGroupOID="ekg_review.record_id" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="ekg_review.q1" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="ekg_review.q2" Mandatory="No"/>
 		<ItemGroupRef ItemGroupOID="ekg_review.ekg_review_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.internal_qc" Name="Internal Qc" Repeating="No" redcap:FormName="internal_qc">
+		<ItemGroupRef ItemGroupOID="internal_qc.qc_pair_record_id" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="internal_qc.qc_results___done" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="internal_qc.internal_qc_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.cross_review" Name="Cross Review" Repeating="No" redcap:FormName="cross_review">
+		<ItemGroupRef ItemGroupOID="cross_review.cross_reviewer_pair_record_id" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="cross_review.cross_reviewer_results___done" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="cross_review.cross_review_complete" Mandatory="No"/>
+	</FormDef>
+	<FormDef OID="Form.tie_breaker" Name="Tie Breaker" Repeating="No" redcap:FormName="tie_breaker">
+		<ItemGroupRef ItemGroupOID="tie_breaker.tb_q1" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="tie_breaker.tb_q2" Mandatory="No"/>
+		<ItemGroupRef ItemGroupOID="tie_breaker.tie_breaker_complete" Mandatory="No"/>
 	</FormDef>
 	<ItemGroupDef OID="ekg_review.record_id" Name="EKG Review" Repeating="No">
 		<ItemRef ItemOID="record_id" Mandatory="No" redcap:Variable="record_id"/>
@@ -24,10 +41,125 @@
 		<ItemRef ItemOID="start_time" Mandatory="No" redcap:Variable="start_time"/>
 		<ItemRef ItemOID="end_time" Mandatory="No" redcap:Variable="end_time"/>
 		<ItemRef ItemOID="object_name" Mandatory="No" redcap:Variable="object_name"/>
-		<ItemRef ItemOID="q1" Mandatory="No" redcap:Variable="q1"/>
+		<ItemRef ItemOID="object_version" Mandatory="No" redcap:Variable="object_version"/>
+		<ItemRef ItemOID="shazam" Mandatory="No" redcap:Variable="shazam"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="ekg_review.q1" Name="Reviewer Questions" Repeating="No">
+		<ItemRef ItemOID="q1" Mandatory="Yes" redcap:Variable="q1"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="ekg_review.q2" Name="EKG Review" Repeating="No">
+		<ItemRef ItemOID="q2" Mandatory="Yes" redcap:Variable="q2"/>
+		<ItemRef ItemOID="q3" Mandatory="Yes" redcap:Variable="q3"/>
+		<ItemRef ItemOID="q4" Mandatory="Yes" redcap:Variable="q4"/>
+		<ItemRef ItemOID="q5" Mandatory="Yes" redcap:Variable="q5"/>
+		<ItemRef ItemOID="q6___0" Mandatory="Yes" redcap:Variable="q6"/>
+		<ItemRef ItemOID="q6___1" Mandatory="Yes" redcap:Variable="q6"/>
+		<ItemRef ItemOID="q6___2" Mandatory="Yes" redcap:Variable="q6"/>
+		<ItemRef ItemOID="q6___3" Mandatory="Yes" redcap:Variable="q6"/>
+		<ItemRef ItemOID="q6___4" Mandatory="Yes" redcap:Variable="q6"/>
+		<ItemRef ItemOID="q7" Mandatory="Yes" redcap:Variable="q7"/>
+		<ItemRef ItemOID="q8" Mandatory="Yes" redcap:Variable="q8"/>
+		<ItemRef ItemOID="q9" Mandatory="Yes" redcap:Variable="q9"/>
+		<ItemRef ItemOID="q9b" Mandatory="Yes" redcap:Variable="q9b"/>
+		<ItemRef ItemOID="q10" Mandatory="Yes" redcap:Variable="q10"/>
+		<ItemRef ItemOID="q10b" Mandatory="Yes" redcap:Variable="q10b"/>
 	</ItemGroupDef>
 	<ItemGroupDef OID="ekg_review.ekg_review_complete" Name="Form Status" Repeating="No">
 		<ItemRef ItemOID="ekg_review_complete" Mandatory="No" redcap:Variable="ekg_review_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="internal_qc.qc_pair_record_id" Name="Intra-Reviewer Quality Control Comparison (v1 and v99)" Repeating="No">
+		<ItemRef ItemOID="qc_pair_record_id" Mandatory="No" redcap:Variable="qc_pair_record_id"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="internal_qc.qc_results___done" Name="" Repeating="No">
+		<ItemRef ItemOID="qc_results___done" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q1" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q2" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q3" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q4" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q5" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q6___0" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q6___1" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q6___2" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q6___3" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q6___4" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q7" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q8" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q9" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q9b" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q10" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results___q10b" Mandatory="No" redcap:Variable="qc_results"/>
+		<ItemRef ItemOID="qc_results_detail" Mandatory="No" redcap:Variable="qc_results_detail"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="internal_qc.internal_qc_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="internal_qc_complete" Mandatory="No" redcap:Variable="internal_qc_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="cross_review.cross_reviewer_pair_record_id" Name="Cross-Reviewer Comparison and Adjudication (v1 and v2)" Repeating="No">
+		<ItemRef ItemOID="cross_reviewer_pair_record_id" Mandatory="No" redcap:Variable="cross_reviewer_pair_record_id"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="cross_review.cross_reviewer_results___done" Name="" Repeating="No">
+		<ItemRef ItemOID="cross_reviewer_results___done" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q1" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q2" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q3" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q4" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q5" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q6___0" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q6___1" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q6___2" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q6___3" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q6___4" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q7" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q8" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q9" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q9b" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q10" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results___q10b" Mandatory="No" redcap:Variable="cross_reviewer_results"/>
+		<ItemRef ItemOID="cross_reviewer_results_detail" Mandatory="No" redcap:Variable="cross_reviewer_results_detail"/>
+		<ItemRef ItemOID="cross_review_qsu_alert" Mandatory="No" redcap:Variable="cross_review_qsu_alert"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="cross_review.cross_review_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="cross_review_complete" Mandatory="No" redcap:Variable="cross_review_complete"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="tie_breaker.tb_q1" Name="Tie Breaker (only applies to version 3)" Repeating="No">
+		<ItemRef ItemOID="tb_q1" Mandatory="No" redcap:Variable="tb_q1"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="tie_breaker.tb_q2" Name="Tie Breaker" Repeating="No">
+		<ItemRef ItemOID="tb_q2" Mandatory="No" redcap:Variable="tb_q2"/>
+		<ItemRef ItemOID="tb_q3" Mandatory="No" redcap:Variable="tb_q3"/>
+		<ItemRef ItemOID="tb_q4" Mandatory="No" redcap:Variable="tb_q4"/>
+		<ItemRef ItemOID="tb_q5" Mandatory="No" redcap:Variable="tb_q5"/>
+		<ItemRef ItemOID="tb_q6_0" Mandatory="No" redcap:Variable="tb_q6_0"/>
+		<ItemRef ItemOID="tb_q6_1" Mandatory="No" redcap:Variable="tb_q6_1"/>
+		<ItemRef ItemOID="tb_q6_2" Mandatory="No" redcap:Variable="tb_q6_2"/>
+		<ItemRef ItemOID="tb_q6_3" Mandatory="No" redcap:Variable="tb_q6_3"/>
+		<ItemRef ItemOID="tb_q6_4" Mandatory="No" redcap:Variable="tb_q6_4"/>
+		<ItemRef ItemOID="tb_q7" Mandatory="No" redcap:Variable="tb_q7"/>
+		<ItemRef ItemOID="tb_q8" Mandatory="No" redcap:Variable="tb_q8"/>
+		<ItemRef ItemOID="tb_q9" Mandatory="No" redcap:Variable="tb_q9"/>
+		<ItemRef ItemOID="tb_q9b" Mandatory="No" redcap:Variable="tb_q9b"/>
+		<ItemRef ItemOID="tb_q10" Mandatory="No" redcap:Variable="tb_q10"/>
+		<ItemRef ItemOID="tb_10b" Mandatory="No" redcap:Variable="tb_10b"/>
+		<ItemRef ItemOID="adjudication_results_detail" Mandatory="No" redcap:Variable="adjudication_results_detail"/>
+		<ItemRef ItemOID="adjudication_results" Mandatory="No" redcap:Variable="adjudication_results"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q1" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q2" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q3" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q4" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q5" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q6___0" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q6___1" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q6___2" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q6___3" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q6___4" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q7" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q8" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q9" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q9b" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q10" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+		<ItemRef ItemOID="tie_breaker_locked_questions___q10b" Mandatory="No" redcap:Variable="tie_breaker_locked_questions"/>
+	</ItemGroupDef>
+	<ItemGroupDef OID="tie_breaker.tie_breaker_complete" Name="Form Status" Repeating="No">
+		<ItemRef ItemOID="tie_breaker_complete" Mandatory="No" redcap:Variable="tie_breaker_complete"/>
 	</ItemGroupDef>
 	<ItemDef OID="record_id" Name="record_id" DataType="text" Length="999" redcap:Variable="record_id" redcap:FieldType="text">
 		<Question><TranslatedText>Record ID</TranslatedText></Question>
@@ -44,20 +176,779 @@
 	<ItemDef OID="object_name" Name="object_name" DataType="text" Length="999" redcap:Variable="object_name" redcap:FieldType="text">
 		<Question><TranslatedText>object name</TranslatedText></Question>
 	</ItemDef>
-	<ItemDef OID="q1" Name="q1" DataType="text" Length="1" redcap:Variable="q1" redcap:FieldType="radio">
-		<Question><TranslatedText>Example Question</TranslatedText></Question>
+	<ItemDef OID="object_version" Name="object_version" DataType="text" Length="999" redcap:Variable="object_version" redcap:FieldType="text" redcap:FieldNote="object version (e.g. 1,2,99)">
+		<Question><TranslatedText>object version
+Version 99 is reserved for internal QC (must be reviewed by the same reviewer that did version 1)</TranslatedText><redcap:FormattedTranslatedText>object version
+&lt;div style=&#039;font-weight:normal&#039;&gt;Version 99 is reserved for internal QC (must be reviewed by the same reviewer that did version 1)&lt;/div&gt;</redcap:FormattedTranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="shazam" Name="shazam" DataType="text" Length="999" redcap:Variable="shazam" redcap:FieldType="descriptive">
+		<Question><TranslatedText></TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="q1" Name="q1" DataType="text" Length="1" redcap:Variable="q1" redcap:FieldType="radio" redcap:SectionHeader="Reviewer Questions" redcap:RequiredField="y">
+		<Question><TranslatedText>1. Was this EKG interpretable?</TranslatedText></Question>
 		<CodeListRef CodeListOID="q1.choices"/>
+	</ItemDef>
+	<ItemDef OID="q2" Name="q2" DataType="text" Length="2" redcap:Variable="q2" redcap:FieldType="radio" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;">
+		<Question><TranslatedText>2. Please select the predominant rhythm </TranslatedText></Question>
+		<CodeListRef CodeListOID="q2.choices"/>
+	</ItemDef>
+	<ItemDef OID="q3" Name="q3" DataType="text" Length="1" redcap:Variable="q3" redcap:FieldType="radio" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;">
+		<Question><TranslatedText>3. Was atrial fibrillation observed for at least 30 seconds?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q3.choices"/>
+	</ItemDef>
+	<ItemDef OID="q4" Name="q4" DataType="text" Length="1" redcap:Variable="q4" redcap:FieldType="radio" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;">
+		<Question><TranslatedText>4. Was atrial flutter observed for at least 30 seconds?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q4.choices"/>
+	</ItemDef>
+	<ItemDef OID="q5" Name="q5" DataType="text" Length="1" redcap:Variable="q5" redcap:FieldType="radio" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;">
+		<Question><TranslatedText>5. Was sinus arrhythmia present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q5.choices"/>
+	</ItemDef>
+	<ItemDef OID="q6___0" Name="q6___0" DataType="boolean" Length="1" redcap:Variable="q6" redcap:FieldType="checkbox" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;" redcap:FieldAnnotation="@NONEOFTHEABOVE=0">
+		<Question><TranslatedText>6. Were any of the following present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q6___0.choices"/>
+	</ItemDef>
+	<ItemDef OID="q6___1" Name="q6___1" DataType="boolean" Length="1" redcap:Variable="q6" redcap:FieldType="checkbox" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;" redcap:FieldAnnotation="@NONEOFTHEABOVE=0">
+		<Question><TranslatedText>6. Were any of the following present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q6___1.choices"/>
+	</ItemDef>
+	<ItemDef OID="q6___2" Name="q6___2" DataType="boolean" Length="1" redcap:Variable="q6" redcap:FieldType="checkbox" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;" redcap:FieldAnnotation="@NONEOFTHEABOVE=0">
+		<Question><TranslatedText>6. Were any of the following present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q6___2.choices"/>
+	</ItemDef>
+	<ItemDef OID="q6___3" Name="q6___3" DataType="boolean" Length="1" redcap:Variable="q6" redcap:FieldType="checkbox" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;" redcap:FieldAnnotation="@NONEOFTHEABOVE=0">
+		<Question><TranslatedText>6. Were any of the following present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q6___3.choices"/>
+	</ItemDef>
+	<ItemDef OID="q6___4" Name="q6___4" DataType="boolean" Length="1" redcap:Variable="q6" redcap:FieldType="checkbox" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;" redcap:FieldAnnotation="@NONEOFTHEABOVE=0">
+		<Question><TranslatedText>6. Were any of the following present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q6___4.choices"/>
+	</ItemDef>
+	<ItemDef OID="q7" Name="q7" DataType="integer" Length="999" redcap:Variable="q7" redcap:FieldType="text" redcap:TextValidationType="int" redcap:FieldNote="max of 500" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;# of beats&quot;">
+		<Question><TranslatedText>7. How many premature SVEs were seen over the 3 minutes?</TranslatedText></Question>
+		<RangeCheck Comparator="GE" SoftHard="Soft">
+			<CheckValue>0</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (0 - 500). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
+		<RangeCheck Comparator="LE" SoftHard="Soft">
+			<CheckValue>500</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (0 - 500). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
+	</ItemDef>
+	<ItemDef OID="q8" Name="q8" DataType="integer" Length="999" redcap:Variable="q8" redcap:FieldType="text" redcap:TextValidationType="int" redcap:FieldNote="max of 500" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;# of beats&quot;">
+		<Question><TranslatedText>8. How many PVCs were seen over the 3 minutes?</TranslatedText></Question>
+		<RangeCheck Comparator="GE" SoftHard="Soft">
+			<CheckValue>0</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (0 - 500). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
+		<RangeCheck Comparator="LE" SoftHard="Soft">
+			<CheckValue>500</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (0 - 500). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
+	</ItemDef>
+	<ItemDef OID="q9" Name="q9" DataType="text" Length="1" redcap:Variable="q9" redcap:FieldType="radio" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;">
+		<Question><TranslatedText>9. Was atrial tachycardia present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q9.choices"/>
+	</ItemDef>
+	<ItemDef OID="q9b" Name="q9b" DataType="integer" Length="999" redcap:Variable="q9b" redcap:FieldType="text" redcap:TextValidationType="int" redcap:RequiredField="y" redcap:BranchingLogic="[q9] = &#039;1&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;# of beats&quot;">
+		<Question><TranslatedText>Number of beats in the longest episode?</TranslatedText></Question>
+		<RangeCheck Comparator="GE" SoftHard="Soft">
+			<CheckValue>2</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (2 - 1000). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
+		<RangeCheck Comparator="LE" SoftHard="Soft">
+			<CheckValue>1000</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (2 - 1000). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
+	</ItemDef>
+	<ItemDef OID="q10" Name="q10" DataType="text" Length="1" redcap:Variable="q10" redcap:FieldType="radio" redcap:RequiredField="y" redcap:BranchingLogic="[q1] &lt;&gt; &#039;0&#039;">
+		<Question><TranslatedText>10. Was ventricular tachycardia present?</TranslatedText></Question>
+		<CodeListRef CodeListOID="q10.choices"/>
+	</ItemDef>
+	<ItemDef OID="q10b" Name="q10b" DataType="integer" Length="999" redcap:Variable="q10b" redcap:FieldType="text" redcap:TextValidationType="int" redcap:RequiredField="y" redcap:BranchingLogic="[q10] = &#039;1&#039;" redcap:FieldAnnotation="@PLACEHOLDER=&quot;# of beats&quot;">
+		<Question><TranslatedText>Number of beats in the longest episode</TranslatedText></Question>
+		<RangeCheck Comparator="GE" SoftHard="Soft">
+			<CheckValue>2</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (2 - 1000). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
+		<RangeCheck Comparator="LE" SoftHard="Soft">
+			<CheckValue>1000</CheckValue>
+			<ErrorMessage><TranslatedText>The value you provided is outside the suggested range. (2 - 1000). This value is admissible, but you may wish to double check it.</TranslatedText></ErrorMessage>
+		</RangeCheck>
 	</ItemDef>
 	<ItemDef OID="ekg_review_complete" Name="ekg_review_complete" DataType="text" Length="1" redcap:Variable="ekg_review_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
 		<Question><TranslatedText>Complete?</TranslatedText></Question>
 		<CodeListRef CodeListOID="ekg_review_complete.choices"/>
 	</ItemDef>
+	<ItemDef OID="qc_pair_record_id" Name="qc_pair_record_id" DataType="text" Length="999" redcap:Variable="qc_pair_record_id" redcap:FieldType="text" redcap:SectionHeader="Intra-Reviewer Quality Control Comparison (v1 and v99)">
+		<Question><TranslatedText>internal QC pair record id</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="qc_results___done" Name="qc_results___done" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___done.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q1" Name="qc_results___q1" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q1.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q2" Name="qc_results___q2" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q2.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q3" Name="qc_results___q3" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q3.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q4" Name="qc_results___q4" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q4.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q5" Name="qc_results___q5" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q5.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q6___0" Name="qc_results___q6___0" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q6___0.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q6___1" Name="qc_results___q6___1" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q6___1.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q6___2" Name="qc_results___q6___2" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q6___2.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q6___3" Name="qc_results___q6___3" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q6___3.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q6___4" Name="qc_results___q6___4" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q6___4.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q7" Name="qc_results___q7" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q7.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q8" Name="qc_results___q8" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q8.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q9" Name="qc_results___q9" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q9.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q9b" Name="qc_results___q9b" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q9b.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q10" Name="qc_results___q10" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q10.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results___q10b" Name="qc_results___q10b" DataType="boolean" Length="1" redcap:Variable="qc_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v99 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="qc_results___q10b.choices"/>
+	</ItemDef>
+	<ItemDef OID="qc_results_detail" Name="qc_results_detail" DataType="text" Length="999" redcap:Variable="qc_results_detail" redcap:FieldType="text">
+		<Question><TranslatedText>List of differences</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="internal_qc_complete" Name="internal_qc_complete" DataType="text" Length="1" redcap:Variable="internal_qc_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="internal_qc_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_pair_record_id" Name="cross_reviewer_pair_record_id" DataType="text" Length="999" redcap:Variable="cross_reviewer_pair_record_id" redcap:FieldType="text" redcap:SectionHeader="Cross-Reviewer Comparison and Adjudication (v1 and v2)">
+		<Question><TranslatedText>cross-reviewer pair record id</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___done" Name="cross_reviewer_results___done" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___done.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q1" Name="cross_reviewer_results___q1" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q1.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q2" Name="cross_reviewer_results___q2" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q2.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q3" Name="cross_reviewer_results___q3" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q3.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q4" Name="cross_reviewer_results___q4" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q4.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q5" Name="cross_reviewer_results___q5" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q5.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q6___0" Name="cross_reviewer_results___q6___0" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q6___0.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q6___1" Name="cross_reviewer_results___q6___1" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q6___1.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q6___2" Name="cross_reviewer_results___q6___2" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q6___2.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q6___3" Name="cross_reviewer_results___q6___3" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q6___3.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q6___4" Name="cross_reviewer_results___q6___4" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q6___4.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q7" Name="cross_reviewer_results___q7" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q7.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q8" Name="cross_reviewer_results___q8" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q8.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q9" Name="cross_reviewer_results___q9" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q9.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q9b" Name="cross_reviewer_results___q9b" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q9b.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q10" Name="cross_reviewer_results___q10" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q10.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results___q10b" Name="cross_reviewer_results___q10b" DataType="boolean" Length="1" redcap:Variable="cross_reviewer_results" redcap:FieldType="checkbox">
+		<Question><TranslatedText>v1 v2 cross-reviewer results</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_reviewer_results___q10b.choices"/>
+	</ItemDef>
+	<ItemDef OID="cross_reviewer_results_detail" Name="cross_reviewer_results_detail" DataType="text" Length="999" redcap:Variable="cross_reviewer_results_detail" redcap:FieldType="text" redcap:FieldNote="comma-separated list of inputs - used to help present tie-breaker">
+		<Question><TranslatedText>List of differences</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="cross_review_qsu_alert" Name="cross_review_qsu_alert" DataType="float" Length="999" redcap:Variable="cross_review_qsu_alert" redcap:FieldType="calc" redcap:Calculation="if([cross_reviewer_results(done)] = &quot;1&quot; AND ( [cross_reviewer_results(q1)] = &quot;0&quot; or   [cross_reviewer_results(q3)] = &quot;0&quot; or   [cross_reviewer_results(q4)] = &quot;0&quot; ), 1, 0)">
+		<Question><TranslatedText>QSU Differs in q1, q3, q4</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="cross_review_complete" Name="cross_review_complete" DataType="text" Length="1" redcap:Variable="cross_review_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="cross_review_complete.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q1" Name="tb_q1" DataType="text" Length="2" redcap:Variable="tb_q1" redcap:FieldType="radio" redcap:SectionHeader="Tie Breaker (only applies to version 3)" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q1</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q1.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q2" Name="tb_q2" DataType="text" Length="2" redcap:Variable="tb_q2" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q2</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q2.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q3" Name="tb_q3" DataType="text" Length="2" redcap:Variable="tb_q3" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q3</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q3.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q4" Name="tb_q4" DataType="text" Length="2" redcap:Variable="tb_q4" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q4</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q4.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q5" Name="tb_q5" DataType="text" Length="2" redcap:Variable="tb_q5" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q5</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q5.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q6_0" Name="tb_q6_0" DataType="text" Length="2" redcap:Variable="tb_q6_0" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q6 0</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q6_0.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q6_1" Name="tb_q6_1" DataType="text" Length="2" redcap:Variable="tb_q6_1" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q6 1</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q6_1.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q6_2" Name="tb_q6_2" DataType="text" Length="2" redcap:Variable="tb_q6_2" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q6 2</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q6_2.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q6_3" Name="tb_q6_3" DataType="text" Length="2" redcap:Variable="tb_q6_3" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q6 3</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q6_3.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q6_4" Name="tb_q6_4" DataType="text" Length="2" redcap:Variable="tb_q6_4" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q6 4</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q6_4.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q7" Name="tb_q7" DataType="text" Length="2" redcap:Variable="tb_q7" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q7</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q7.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q8" Name="tb_q8" DataType="text" Length="2" redcap:Variable="tb_q8" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q8</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q8.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q9" Name="tb_q9" DataType="text" Length="2" redcap:Variable="tb_q9" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q9</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q9.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q9b" Name="tb_q9b" DataType="text" Length="2" redcap:Variable="tb_q9b" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q9b</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q9b.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_q10" Name="tb_q10" DataType="text" Length="2" redcap:Variable="tb_q10" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q10</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_q10.choices"/>
+	</ItemDef>
+	<ItemDef OID="tb_10b" Name="tb_10b" DataType="text" Length="2" redcap:Variable="tb_10b" redcap:FieldType="radio" redcap:MatrixGroupName="tie_breaker_results">
+		<Question><TranslatedText>q10b</TranslatedText></Question>
+		<CodeListRef CodeListOID="tb_10b.choices"/>
+	</ItemDef>
+	<ItemDef OID="adjudication_results_detail" Name="adjudication_results_detail" DataType="text" Length="999" redcap:Variable="adjudication_results_detail" redcap:FieldType="textarea" redcap:FieldNote="applies ONLY to version 3 records">
+		<Question><TranslatedText>tie breaker adjudication result details</TranslatedText></Question>
+	</ItemDef>
+	<ItemDef OID="adjudication_results" Name="adjudication_results" DataType="text" Length="1" redcap:Variable="adjudication_results" redcap:FieldType="radio" redcap:FieldNote="applies ONLY to version 3 records">
+		<Question><TranslatedText>cross-reviewer adjudication result</TranslatedText></Question>
+		<CodeListRef CodeListOID="adjudication_results.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q1" Name="tie_breaker_locked_questions___q1" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q1.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q2" Name="tie_breaker_locked_questions___q2" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q2.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q3" Name="tie_breaker_locked_questions___q3" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q3.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q4" Name="tie_breaker_locked_questions___q4" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q4.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q5" Name="tie_breaker_locked_questions___q5" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q5.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q6___0" Name="tie_breaker_locked_questions___q6___0" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q6___0.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q6___1" Name="tie_breaker_locked_questions___q6___1" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q6___1.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q6___2" Name="tie_breaker_locked_questions___q6___2" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q6___2.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q6___3" Name="tie_breaker_locked_questions___q6___3" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q6___3.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q6___4" Name="tie_breaker_locked_questions___q6___4" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q6___4.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q7" Name="tie_breaker_locked_questions___q7" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q7.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q8" Name="tie_breaker_locked_questions___q8" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q8.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q9" Name="tie_breaker_locked_questions___q9" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q9.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q9b" Name="tie_breaker_locked_questions___q9b" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q9b.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q10" Name="tie_breaker_locked_questions___q10" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q10.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_locked_questions___q10b" Name="tie_breaker_locked_questions___q10b" DataType="boolean" Length="1" redcap:Variable="tie_breaker_locked_questions" redcap:FieldType="checkbox" redcap:FieldNote="Check to prevent change during tie-breaker">
+		<Question><TranslatedText>These questions are to be locked to prevent editing during the tie-breaker . (TO BE DELETED)</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_locked_questions___q10b.choices"/>
+	</ItemDef>
+	<ItemDef OID="tie_breaker_complete" Name="tie_breaker_complete" DataType="text" Length="1" redcap:Variable="tie_breaker_complete" redcap:FieldType="select" redcap:SectionHeader="Form Status">
+		<Question><TranslatedText>Complete?</TranslatedText></Question>
+		<CodeListRef CodeListOID="tie_breaker_complete.choices"/>
+	</ItemDef>
 	<CodeList OID="q1.choices" Name="q1" DataType="text" redcap:Variable="q1">
-		<CodeListItem CodedValue="1"><Decode><TranslatedText>A</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="2"><Decode><TranslatedText>B</TranslatedText></Decode></CodeListItem>
-		<CodeListItem CodedValue="3"><Decode><TranslatedText>C</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q2.choices" Name="q2" DataType="text" redcap:Variable="q2">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Sinus Rhythm</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Atrial Fibrillation</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Atrial Flutter</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="4"><Decode><TranslatedText>Atrial Tachycardia</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="5"><Decode><TranslatedText>Other Supraventricular Tachycardia</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="6"><Decode><TranslatedText>Junctional Rhythm</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="7"><Decode><TranslatedText>Ventricular Tachycardia</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Other rhythm</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q3.choices" Name="q3" DataType="text" redcap:Variable="q3">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q4.choices" Name="q4" DataType="text" redcap:Variable="q4">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q5.choices" Name="q5" DataType="text" redcap:Variable="q5">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q6___0.choices" Name="q6___0" DataType="boolean" redcap:Variable="q6" redcap:CheckboxChoices="0, None | 1, Wenckebach | 2, Mobitz Type II heart block | 3, Complete/3rd degree AV block | 4, Junctional beats">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q6___1.choices" Name="q6___1" DataType="boolean" redcap:Variable="q6" redcap:CheckboxChoices="0, None | 1, Wenckebach | 2, Mobitz Type II heart block | 3, Complete/3rd degree AV block | 4, Junctional beats">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q6___2.choices" Name="q6___2" DataType="boolean" redcap:Variable="q6" redcap:CheckboxChoices="0, None | 1, Wenckebach | 2, Mobitz Type II heart block | 3, Complete/3rd degree AV block | 4, Junctional beats">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q6___3.choices" Name="q6___3" DataType="boolean" redcap:Variable="q6" redcap:CheckboxChoices="0, None | 1, Wenckebach | 2, Mobitz Type II heart block | 3, Complete/3rd degree AV block | 4, Junctional beats">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q6___4.choices" Name="q6___4" DataType="boolean" redcap:Variable="q6" redcap:CheckboxChoices="0, None | 1, Wenckebach | 2, Mobitz Type II heart block | 3, Complete/3rd degree AV block | 4, Junctional beats">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q9.choices" Name="q9" DataType="text" redcap:Variable="q9">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="q10.choices" Name="q10" DataType="text" redcap:Variable="q10">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>No</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Yes</TranslatedText></Decode></CodeListItem>
 	</CodeList>
 	<CodeList OID="ekg_review_complete.choices" Name="ekg_review_complete" DataType="text" redcap:Variable="ekg_review_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___done.choices" Name="qc_results___done" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q1.choices" Name="qc_results___q1" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q2.choices" Name="qc_results___q2" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q3.choices" Name="qc_results___q3" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q4.choices" Name="qc_results___q4" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q5.choices" Name="qc_results___q5" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q6___0.choices" Name="qc_results___q6___0" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q6___1.choices" Name="qc_results___q6___1" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q6___2.choices" Name="qc_results___q6___2" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q6___3.choices" Name="qc_results___q6___3" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q6___4.choices" Name="qc_results___q6___4" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q7.choices" Name="qc_results___q7" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q8.choices" Name="qc_results___q8" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q9.choices" Name="qc_results___q9" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q9b.choices" Name="qc_results___q9b" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q10.choices" Name="qc_results___q10" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="qc_results___q10b.choices" Name="qc_results___q10b" DataType="boolean" redcap:Variable="qc_results" redcap:CheckboxChoices="done, v1 and v99 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="internal_qc_complete.choices" Name="internal_qc_complete" DataType="text" redcap:Variable="internal_qc_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___done.choices" Name="cross_reviewer_results___done" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q1.choices" Name="cross_reviewer_results___q1" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q2.choices" Name="cross_reviewer_results___q2" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q3.choices" Name="cross_reviewer_results___q3" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q4.choices" Name="cross_reviewer_results___q4" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q5.choices" Name="cross_reviewer_results___q5" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q6___0.choices" Name="cross_reviewer_results___q6___0" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q6___1.choices" Name="cross_reviewer_results___q6___1" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q6___2.choices" Name="cross_reviewer_results___q6___2" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q6___3.choices" Name="cross_reviewer_results___q6___3" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q6___4.choices" Name="cross_reviewer_results___q6___4" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q7.choices" Name="cross_reviewer_results___q7" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q8.choices" Name="cross_reviewer_results___q8" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q9.choices" Name="cross_reviewer_results___q9" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q9b.choices" Name="cross_reviewer_results___q9b" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q10.choices" Name="cross_reviewer_results___q10" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_reviewer_results___q10b.choices" Name="cross_reviewer_results___q10b" DataType="boolean" redcap:Variable="cross_reviewer_results" redcap:CheckboxChoices="done, v1 and v2 complete | q1, q1 match | q2, q2 match | q3, q3 match | q4, q4 match | q5, q5 match | q6___0, q6 0 match | q6___1, q6 1 match | q6___2, q6 2 match | q6___3, q6 3 match | q6___4, q6 4 match | q7, q7 match | q8, q8 match | q9, q9 match | q9b, q9b match | q10, q10 match | q10b, q10b match">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="cross_review_complete.choices" Name="cross_review_complete" DataType="text" redcap:Variable="cross_review_complete">
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q1.choices" Name="tb_q1" DataType="text" redcap:Variable="tb_q1">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q2.choices" Name="tb_q2" DataType="text" redcap:Variable="tb_q2">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q3.choices" Name="tb_q3" DataType="text" redcap:Variable="tb_q3">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q4.choices" Name="tb_q4" DataType="text" redcap:Variable="tb_q4">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q5.choices" Name="tb_q5" DataType="text" redcap:Variable="tb_q5">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q6_0.choices" Name="tb_q6_0" DataType="text" redcap:Variable="tb_q6_0">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q6_1.choices" Name="tb_q6_1" DataType="text" redcap:Variable="tb_q6_1">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q6_2.choices" Name="tb_q6_2" DataType="text" redcap:Variable="tb_q6_2">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q6_3.choices" Name="tb_q6_3" DataType="text" redcap:Variable="tb_q6_3">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q6_4.choices" Name="tb_q6_4" DataType="text" redcap:Variable="tb_q6_4">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q7.choices" Name="tb_q7" DataType="text" redcap:Variable="tb_q7">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q8.choices" Name="tb_q8" DataType="text" redcap:Variable="tb_q8">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q9.choices" Name="tb_q9" DataType="text" redcap:Variable="tb_q9">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q9b.choices" Name="tb_q9b" DataType="text" redcap:Variable="tb_q9b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_q10.choices" Name="tb_q10" DataType="text" redcap:Variable="tb_q10">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tb_10b.choices" Name="tb_10b" DataType="text" redcap:Variable="tb_10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Tie goes to version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Tie goes to version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="3"><Decode><TranslatedText>Tie is different than either version 1 or 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="99"><Decode><TranslatedText>Locked during tie-breaker</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="adjudication_results.choices" Name="adjudication_results" DataType="text" redcap:Variable="adjudication_results">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Matched version 1</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="2"><Decode><TranslatedText>Matched version 2</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Did not match either version 1 or 2</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q1.choices" Name="tie_breaker_locked_questions___q1" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q2.choices" Name="tie_breaker_locked_questions___q2" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q3.choices" Name="tie_breaker_locked_questions___q3" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q4.choices" Name="tie_breaker_locked_questions___q4" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q5.choices" Name="tie_breaker_locked_questions___q5" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q6___0.choices" Name="tie_breaker_locked_questions___q6___0" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q6___1.choices" Name="tie_breaker_locked_questions___q6___1" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q6___2.choices" Name="tie_breaker_locked_questions___q6___2" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q6___3.choices" Name="tie_breaker_locked_questions___q6___3" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q6___4.choices" Name="tie_breaker_locked_questions___q6___4" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q7.choices" Name="tie_breaker_locked_questions___q7" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q8.choices" Name="tie_breaker_locked_questions___q8" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q9.choices" Name="tie_breaker_locked_questions___q9" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q9b.choices" Name="tie_breaker_locked_questions___q9b" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q10.choices" Name="tie_breaker_locked_questions___q10" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_locked_questions___q10b.choices" Name="tie_breaker_locked_questions___q10b" DataType="boolean" redcap:Variable="tie_breaker_locked_questions" redcap:CheckboxChoices="q1, q1 | q2, q2 | q3, q3 | q4, q4 | q5, q5 | q6___0, q6 0 | q6___1, q6 1 | q6___2, q6 2 | q6___3, q6 3 | q6___4, q6 4 | q7, q7 | q8, q8 | q9, q9 | q9b, q9b | q10, q10 | q10b, q10b">
+		<CodeListItem CodedValue="1"><Decode><TranslatedText>Checked</TranslatedText></Decode></CodeListItem>
+		<CodeListItem CodedValue="0"><Decode><TranslatedText>Unchecked</TranslatedText></Decode></CodeListItem>
+	</CodeList>
+	<CodeList OID="tie_breaker_complete.choices" Name="tie_breaker_complete" DataType="text" redcap:Variable="tie_breaker_complete">
 		<CodeListItem CodedValue="0"><Decode><TranslatedText>Incomplete</TranslatedText></Decode></CodeListItem>
 		<CodeListItem CodedValue="1"><Decode><TranslatedText>Unverified</TranslatedText></Decode></CodeListItem>
 		<CodeListItem CodedValue="2"><Decode><TranslatedText>Complete</TranslatedText></Decode></CodeListItem>
