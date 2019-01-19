@@ -18,7 +18,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     public $group_id;       // DAG Group ID
     public $dag_name;       // DAG Name
 
-
     // Record Summary Output
     public $rs;
     public $totalCount, $totalComplete, $totalPercent;
@@ -315,8 +314,16 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 <style><?php echo file_get_contents($this->getModulePath() . "css/data_entry_index.css")?></style>
                 <style><?php echo file_get_contents($this->getModulePath() . "css/ekg_viewer.css")?></style>
 
+            <?php
+                // Do not permit reviews if the project has been suspended
+                if ($this->getProjectSetting('deactivate-reviews') == 1) {
+                    echo "<h3>EKG Reviews have been suspended</h3>";
+                    $this->exitAfterHook();
+                    return;
+                }
+            ?>
 
-                <script type='text/javascript' src='<?php echo $this->getUrl("js/data_entry_index.js") ?>'></script>
+            <script type='text/javascript' src='<?php echo $this->getUrl("js/data_entry_index.js") ?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/d3.v4.min.js")?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/ekg_viewer.js")?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/hotkeys.min.js")?>'></script>
@@ -514,7 +521,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      * @param $type
      * @return mixed
      */
-    function updateDifferences($r1,$r2,$type) {
+    function updateDifferences(&$r1,&$r2,$type) {
         if ($type == "qc") {
             $pair_field   = 'qc_pair_record_id';
             $result_field = 'qc_results';
@@ -523,7 +530,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         } elseif ($type == "adjudication") {
             $pair_field   = 'cross_reviewer_pair_record_id';
             $result_field = 'cross_reviewer_results';
-            $detail_field = 'cross_reviewer_result_detail';
+            $detail_field = 'cross_reviewer_results_detail';
             $form         = 'cross_review_complete';
         } else {
             $this->emError("Invalid Type:", $type);
@@ -616,7 +623,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         if ($update) {
             $data = [ $r1, $r2 ];
             $q = REDCap::saveData('json', json_encode($data));
-            if (!empty($q['errors'])) $this->emError("Error updating $type", $data, $q);
+            if (!empty($q['errors'])) $this->emError("Error updating $type", $data, $r1, $r2, $q);
 
             $this->emDebug("Update results",$q);
 

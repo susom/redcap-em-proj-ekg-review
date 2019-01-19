@@ -109,6 +109,18 @@
       "required": true,
       "default": "0",
       "type": "text"
+    },
+    {
+      "key": "header-text",
+      "name": "<b>Custom Header Text</b><br>Display this text (if any) on the reviewer landing page before they begin reviewing EKGs - can be used for updates",
+      "required": false,
+      "type": "rich-text"
+    },
+    {
+      "key": "deactivate-reviews",
+      "name": "<b>Check to deactivate the review portal</b><br>This will prevent users in DAGs from being able to review additional EKGs",
+      "required": false,
+      "type": "checkbox"
     }
   ]
 }
