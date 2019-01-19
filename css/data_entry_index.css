@@ -8,6 +8,30 @@
     font-weight: normal;
 }
 
+/* Now that we have multiple forms, these buttons have changed */
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:first-child {
+    display:none;
+}
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:nth-child(2) {
+    color: red;
+}
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:nth-child(2):after {
+    content: " for now (fix on resume)";
+}
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child {
+    color: green;
+}
+
+div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child:after {
+    content: " - lets fix it now";
+}
+
+
+
+/*
 div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:first-child {
     color: red;
 }
@@ -24,7 +48,7 @@ div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child {
 div[aria-describedby="reqPopup"] div.ui-dialog-buttonset button:last-child:after {
     content: " - lets fix it now";
 }
-
+*/
 
 /** SHAZAM STUFF **/
 

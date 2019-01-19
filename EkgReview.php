@@ -450,25 +450,37 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // contains any required missing field validations
         // $this->emDebug("_GET", empty($_GET['__reqmsgpre']), $_GET) ;
 
-        if ($this->isDagUser() && empty($_GET['__reqmsgpre'])) {
+        if ($this->isDagUser()) {
 
-            // Get recent record
-            $q = REDCap::getData($project_id, 'json', array($record));
-            $results = json_decode($q,true);
-            $this->emDebug("Saving record:",$results);
+            if (empty($_GET['__reqmsgpre'])) {
+                // Get recent record
+                $q = REDCap::getData($project_id, 'json', array($record));
+                $results = json_decode($q,true);
+                $this->emDebug("Saving record:",$results);
 
-            if (isset($results[0]['end_time']) && empty($results[0]['end_time'])) {
-                // Set end-time and mark record as complete if it was empty
-                $results[0]['end_time'] = Date('Y-m-d H:i:s');
-                $results[0]['ekg_review_complete'] = 2;
+                if (isset($results[0]['end_time']) && empty($results[0]['end_time'])) {
+                    // Set end-time and mark record as complete if it was empty
+                    $results[0]['end_time'] = Date('Y-m-d H:i:s');
+                    $this->emDebug("Updating end_time/status");
+                }
 
+                if (isset($results[0]['ekg_review_complete']) && $results[0]['ekg_review_complete']==0) {
+                    $results[0]['ekg_review_complete'] = 2;
+                    $this->emDebug("Marking ekg_review complete");
+                }
+
+                // Save record
                 $q = REDCap::saveData('json', json_encode($results));
-                $this->emDebug("Updating end_time/status", json_encode($results[0]), "Save Result", $q);
-            }
+                $this->emDebug("Save Result", $q, json_encode($results[0]));
 
-            // Save and redirect to next record!
-            $this->redirectToNextRecord($project_id, $this->group_id);
-            $this->exitAfterHook();
+                // Save and redirect to next record!
+                $this->redirectToNextRecord($project_id, $this->group_id);
+                $this->exitAfterHook();
+            } else {
+                $this->emDebug("Validation issue remains with $record");
+            }
+        } else {
+            // Not a DAG User
         }
     }
 
