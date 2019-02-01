@@ -28,6 +28,11 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     // Get array of values for question in $pair_field;
     const QUESTION_FIELDS = [ "q1","q2","q3","q4","q5","q6___0","q6___1","q6___2","q6___3","q6___4","q7","q8","q9","q9b","q10","q10b" ];
     const COMPARE_FIELDS  = [ 'q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q7','q8','q9','q9b','q10','q10b' ];
+
+    // Fields used to lock values during tie-breaker if same as originals
+    const TB_LOCK_FIELDS  = [ 'q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q9','q10' ];
+
+
     const TB_FIELD_MAP = [
         'tb_q1'     => 'q1',
         'tb_q2'     => 'q2',
@@ -306,6 +311,9 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
         if ($instrument == $review_form && $this->isDagUser()) {
 
+            // Load the current record's data
+            $record_data = $this->getRecord($record);
+
             // We are on the review form - inject!
             $this->emDebug("Injecting custom css/js in " . __FUNCTION__ . " on $instrument");
 
@@ -323,7 +331,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 }
             ?>
 
-            <script type='text/javascript' src='<?php echo $this->getUrl("js/data_entry_index.js") ?>'></script>
+                <script type='text/javascript' src='<?php echo $this->getUrl("js/data_entry_index.js") ?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/d3.v4.min.js")?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/ekg_viewer.js")?>'></script>
                 <script type='text/javascript' src='<?php echo $this->getUrl("js/hotkeys.min.js")?>'></script>
@@ -335,6 +343,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                     EKGEM['dag']        = <?php echo json_encode($this->group_id ) ?>;
                     EKGEM['userid']     = <?php echo json_encode(USERID) ?>;
                     EKGEM['data']       = <?php echo json_encode($this->getObject($record)) ?>;
+                    EKGEM['locked']     = <?php echo json_encode($this->getLockedQuestions($record_data)) ?>;
                 </script>
             <?php
         } else {
@@ -349,6 +358,28 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         }
     }
 
+
+
+    function getLockedQuestions($record_data) {
+        $locked_questions = [];
+        if ($record_data['object_version'] == "3") {
+            // $this->emDebug($record_data);
+            $left_part = "cross_reviewer_results___";
+            $left_length = strlen($left_part);
+            foreach ($record_data as $k => $v) {
+                if ($v == "1"                                           // The value should be locked
+                    && substr($k, 0, $left_length) == $left_part) // Should start with leftpart
+                {
+                    $right_part = substr($k, $left_length);             // This corresponds to the field name the checkbox represents
+
+                    if (in_array($right_part, self::TB_LOCK_FIELDS)) {
+                        array_push($locked_questions, $right_part);
+                    }
+                }
+            }
+        }
+        return $locked_questions;
+    }
 
     /**
      * Take a node from the record summary to generate a progress object
@@ -661,7 +692,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-    /**
+        /**
      * Each redcap record has an object_name - use that to pull the object from GCP and return it as an array
      * @param $record
      * @return array|bool   Array of data or false
@@ -696,6 +727,19 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $data = csvToArray($contents);
             return $data;
         }
+    }
+
+
+    /**
+     * Return an array from json of the current record
+     * @param $record
+     * @return mixed
+     */
+    function getRecord($record) {
+        $q = REDCap::getData('json', array($record));
+        $results = json_decode($q,true);
+        $result = $results[0];
+        return $result;
     }
 
 
