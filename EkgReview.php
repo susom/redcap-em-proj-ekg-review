@@ -364,7 +364,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
 
     /**
-     * Returns a list of records to lock
+     * Returns an array of the question field_names that should be locked
      * @param $record_data
      * @return array
      */
@@ -389,7 +389,11 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                 }
             }
             if ($all_agree) array_push($locked_questions, '__chkn__q6');
+
+            // We always lock Q7,Q8
+            array_push($locked_questions, 'q7','q8');
         }
+
         return $locked_questions;
     }
 

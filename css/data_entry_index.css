@@ -177,3 +177,21 @@ div.progress{
 /* Dont show some buttons */
 #__DELETEBUTTONS__-tr, #__LOCKRECORD__-tr { display:none; }
 
+.disabled-question {
+    background-image: repeating-linear-gradient(45deg, #ccc, #ccc 10px, #dbdbdb 10px, #dbdbdb 20px);
+    border-radius: 5px;
+    cursor: not-allowed;
+}
+.disabled-question * {
+    cursor: not-allowed !important;
+}
+
+.disabled-question input {
+    background: transparent;
+}
+
+.disabled-question > div > div.shazam_label {
+    background-color: #666;
+    border-color: #444;
+}
+
