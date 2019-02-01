@@ -30,7 +30,8 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     const COMPARE_FIELDS  = [ 'q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q7','q8','q9','q9b','q10','q10b' ];
 
     // Fields used to lock values during tie-breaker if same as originals
-    const TB_LOCK_FIELDS  = [ 'q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q9','q10' ];
+    const TB_LOCK_FIELDS     = [ 'q1','q2','q3','q4','q5','q9','q10' ];
+    const TB_LOCK_CBX_FIELDS = [ 'q6___0','q6___1','q6___2','q6___3','q6___4' ];
 
 
     const TB_FIELD_MAP = [
@@ -314,6 +315,9 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             // Load the current record's data
             $record_data = $this->getRecord($record);
 
+            // Get questions to lock on this record
+            $locked_questions = $this->getLockedQuestions($record_data);
+
             // We are on the review form - inject!
             $this->emDebug("Injecting custom css/js in " . __FUNCTION__ . " on $instrument");
 
@@ -343,7 +347,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                     EKGEM['dag']        = <?php echo json_encode($this->group_id ) ?>;
                     EKGEM['userid']     = <?php echo json_encode(USERID) ?>;
                     EKGEM['data']       = <?php echo json_encode($this->getObject($record)) ?>;
-                    EKGEM['locked']     = <?php echo json_encode($this->getLockedQuestions($record_data)) ?>;
+                    EKGEM['locked']     = <?php echo json_encode($locked_questions) ?>;
                 </script>
             <?php
         } else {
@@ -359,24 +363,32 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     }
 
 
-
+    /**
+     * Returns a list of records to lock
+     * @param $record_data
+     * @return array
+     */
     function getLockedQuestions($record_data) {
         $locked_questions = [];
         if ($record_data['object_version'] == "3") {
-            // $this->emDebug($record_data);
             $left_part = "cross_reviewer_results___";
-            $left_length = strlen($left_part);
-            foreach ($record_data as $k => $v) {
-                if ($v == "1"                                           // The value should be locked
-                    && substr($k, 0, $left_length) == $left_part) // Should start with leftpart
-                {
-                    $right_part = substr($k, $left_length);             // This corresponds to the field name the checkbox represents
-
-                    if (in_array($right_part, self::TB_LOCK_FIELDS)) {
-                        array_push($locked_questions, $right_part);
-                    }
+            foreach (self::TB_LOCK_FIELDS as $field) {
+                $xc_field = $left_part . $field;
+                if (isset($record_data[$xc_field]) && $record_data[$xc_field] == "1") {
+                    array_push($locked_questions, $field);
                 }
             }
+
+            // For checkboxes, we lock ONLY if ALL agree!
+            $all_agree = true;
+            foreach (self::TB_LOCK_CBX_FIELDS as $field) {
+                $xc_field = $left_part . $field;
+                if (isset($record_data[$xc_field]) && $record_data[$xc_field] == "0") {
+                    // We found one checkbox that doesn't match - can't lock em.
+                    $all_agree = false;
+                }
+            }
+            if ($all_agree) array_push($locked_questions, '__chkn__q6');
         }
         return $locked_questions;
     }
