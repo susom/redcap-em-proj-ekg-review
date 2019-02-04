@@ -278,9 +278,10 @@ $('document').ready( function() {
 
             // Check for locking fields
             $.each(EKGEM.locked, function(i,j) {
-                // console.log("Locking" , j);
+                console.log("Locking" , j);
                 let radios = $('input[name="' + j + '___radio"]');
                 let inputs = $('input[name="' + j + '"]');
+                let checkboxes = $('input[name="__chkn__' + j + '"]');
 
                 if (radios.length) {
                     console.log('found Radio', j, radios);
@@ -294,8 +295,15 @@ $('document').ready( function() {
                     console.log("DFLEX", radios.closest('.d-flex'));
                     radios.closest('.d-flex').addClass('disabled-question');
                     // radios.closest('.d-flex').css({"background":"#ccc","border-radius":"3px"});
+                }
 
-                } else if (inputs.length) {
+                if (checkboxes.length) {
+                    console.log('found checkbox', j, inputs);
+                    checkboxes.attr('disabled',true);
+                    checkboxes.closest('.d-flex').addClass('disabled-question');
+                }
+
+                if (inputs.length) {
                     console.log('found input', j, inputs);
                     inputs.attr('disabled',true);
                     inputs.closest('.d-flex').addClass('disabled-question');
