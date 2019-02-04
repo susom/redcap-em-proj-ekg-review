@@ -39,6 +39,11 @@
         "url": "recordset_creator.php"
       },
       {
+        "name": "EKG TieBreaker Recordset Creator",
+        "icon": "gear",
+        "url": "tb_creator.php"
+      },
+      {
         "name": "EKG GCP Bucket Contents",
         "icon": "arrow_down",
         "url": "bucket_contents.php"
