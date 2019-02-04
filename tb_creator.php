@@ -41,7 +41,7 @@ $existing_tbs = 0;
 $complete_tbs = 0;
 
 // Starting new records at 3000
-$new_id = max($max_id + 1, 3000);
+$new_id = max($max_id + 1, 30000);
 
 foreach ($map as $object_name => $versions) {
 
