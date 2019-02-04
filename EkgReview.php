@@ -27,34 +27,19 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     const UNASSIGNED = "__unassigned__";
     // Get array of values for question in $pair_field;
     const QUESTION_FIELDS = [ "q1","q2","q3","q4","q5","q6___0","q6___1","q6___2","q6___3","q6___4","q7","q8","q9","q9b","q10","q10b" ];
+
+    // Array of fields we are comparing for QC/Adjudication
     const COMPARE_FIELDS  = [ 'q1','q2','q3','q4','q5','q6___0','q6___1','q6___2','q6___3','q6___4','q7','q8','q9','q9b','q10','q10b' ];
 
-    // Fields used to lock values during tie-breaker if same as originals
-    const TB_LOCK_FIELDS     = [ 'q1','q2','q3','q4','q5','q9','q10' ];
+    // These are the fields for the tie-breaker summary results
+    const TB_FIELDS       = [ 'tb_q1','tb_q2','tb_q3','tb_q4','tb_q5','tb_q6','tb_q7','tb_q8','tb_q9','tb_q10' ];
+    const TB_LOCK_ALWAYS     = [ 'q7','q8' ];
     const TB_LOCK_CBX_FIELDS = [ 'q6___0','q6___1','q6___2','q6___3','q6___4' ];
 
-
-    const TB_FIELD_MAP = [
-        'tb_q1'     => 'q1',
-        'tb_q2'     => 'q2',
-        'tb_q3'     => 'q3',
-        'tb_q4'     => 'q4',
-        'tb_q5'     => 'q5',
-        'tb_q6_0'   => 'q6___0',
-        'tb_q6_1'   => 'q6___1',
-        'tb_q6_2'   => 'q6___2',
-        'tb_q6_3'   => 'q6___3',
-        'tb_q6_4'   => 'q6___4',
-        'tb_q7'     => 'q7',
-        'tb_q8'     => 'q8',
-        'tb_q9'     => 'q9',
-        'tb_q9b'    => 'q9b',
-        'tb_q10'    => 'q10',
-        'tb_q10b'   => 'q10b'
-    ];
-    const TB_FORM = 'tie_breaker';
+    const EKG_FORM = 'ekg_review';
     const QC_FORM = 'internal_qc';
     const ADJ_FORM = 'cross_review';
+    const TB_FORM = 'tie_breaker';
 
     function __construct()
     {
@@ -187,7 +172,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
             if (in_array($object_name, $current_dag_object_names)) {
                 // This object is already assigned to the dag user - only assign it again if it is version 99 - internal QC
-                $this->emDebug($object_name . " is already part of this dag");
+                //$this->emDebug($object_name . " is already part of this dag");
                 if ($object_version == 99) $available_records[$object_name] = $record;
             } else {
                 // This object is NOT in the dag's existing records so it is available
@@ -366,32 +351,20 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
     /**
      * Returns an array of the question field_names that should be locked
      * @param $record_data
-     * @return array
+     * @return array    (q1, q2, ... q6, ...)
      */
     function getLockedQuestions($record_data) {
         $locked_questions = [];
         if ($record_data['object_version'] == "3") {
-            $left_part = "cross_reviewer_results___";
-            foreach (self::TB_LOCK_FIELDS as $field) {
-                $xc_field = $left_part . $field;
-                if (isset($record_data[$xc_field]) && $record_data[$xc_field] == "1") {
+
+            foreach(self::TB_FIELDS as $tb_field) {
+                $field = substr($tb_field,3);
+
+                if (isset($record_data[$tb_field]) && $record_data[$tb_field] == '99') {
+                    // This field should be locked!
                     array_push($locked_questions, $field);
                 }
             }
-
-            // For checkboxes, we lock ONLY if ALL agree!
-            $all_agree = true;
-            foreach (self::TB_LOCK_CBX_FIELDS as $field) {
-                $xc_field = $left_part . $field;
-                if (isset($record_data[$xc_field]) && $record_data[$xc_field] == "0") {
-                    // We found one checkbox that doesn't match - can't lock em.
-                    $all_agree = false;
-                }
-            }
-            if ($all_agree) array_push($locked_questions, '__chkn__q6');
-
-            // We always lock Q7,Q8
-            array_push($locked_questions, 'q7','q8');
         }
 
         return $locked_questions;
@@ -508,7 +481,8 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
             if (empty($_GET['__reqmsgpre'])) {
                 // Get recent record
-                $q = REDCap::getData($project_id, 'json', array($record));
+                $fields = REDCap::getFieldNames('ekg_review');
+                $q = REDCap::getData($project_id, 'json', array($record), $fields);
                 $results = json_decode($q,true);
                 $this->emDebug("Saving record:",$results);
 
@@ -540,22 +514,135 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
 
     /**
-     * Analyxe the Tie Breaker=
-     *  The tie breaker reacord (v3) is made by duplicating record v1 or v2.
-     *  - when it is rendered in the UI - we only show those fields are at different or missing data
+     * Compare versions 1-3 to determine result of tie-breaker
      * @param $versions
+     * @return bool|string
      */
     function doTieBreaker($versions) {
+
+        // Logic:  for each question - determine:
+        //  if it was locked - if so, set tb_xxx equal to 99
+        //  if same as v1, then 1
+        //  if same as v2, then 2
+        //  if different than both, 3.
+        // For checkbox, we are treating ANY difference as a DIFFERENCE but can evaluate one at a time.
+
         $r1 = $versions[1];
         $r2 = $versions[2];
         $r3 = $versions[3];
 
-        // If tie breaker form is complete, then we are done.
-        if ($r3[self::TB_FORM . '_complete'] != 2) {
+        // Dont do anything if version 3 isn't complete
+        if ($r3[self::EKG_FORM . '_complete'] != 2) return false;
 
-            // When this was rendered, we used the cross_reviewer_results
-            // to 'freeze' certain questions
-            // TODO : this is incomplete for now
+        // If tie breaker form is complete, then we are done.
+        if ($r3[self::TB_FORM . '_complete'] == 2) return false;
+
+        // Only put something in the update array if it is necessary
+        $data = [];
+
+        // To determine the overall result, we need to keep track of each question's result
+        $counts = [
+            '1' => 0,
+            '2' => 0,
+            '3' => 0,
+            '99' => 0
+        ];
+
+        // Because there are multiple checkbox questions and we are treating 'any' difference as an overall difference,
+        // we need to go all options first before we can make the final determination
+        $checkboxResult = "";
+
+        foreach (self::QUESTION_FIELDS as $field) {
+
+            $r1_val = $r1[$field];
+            $r2_val = $r2[$field];
+            $r3_val = $r3[$field];
+
+            $result = null;
+
+            $isCheckbox = in_array($field, self::TB_LOCK_CBX_FIELDS);
+
+            $tb_field = $isCheckbox ? 'tb_q6' : 'tb_' . $field;
+
+            // Skip any fields that we aren't tracking
+            if (! in_array($tb_field, $this::TB_FIELDS)) continue;
+
+            if ($r3[$tb_field] == "99") {
+                // This was a locked field - no need to change anything
+                $result = 99;
+            } else {
+
+                if ($r3_val == $r1_val) {
+                    $result = 1;
+                } elseif ($r3_val == $r2_val) {
+                    $result = 2;
+                } else {
+                    // Did not match either v1 or v2
+                    $result = 3;
+                }
+                $this->emDebug("Comparing " . $r3['record_id'] . " $field: " . $r1_val . " vs " . $r2_val . " | " . $r3_val . " => result: " . $result);
+            }
+            $counts[$result]++;
+
+
+            if ($isCheckbox) {
+                if (empty($checkboxResult)) {
+                    // Initialize with first comparison result:
+                    $checkboxResult = $result;
+                } else if ($result != $checkboxResult) {
+                    $checkboxResult = '3';
+                }
+            } else {
+                // Make the result field for non-checkbox fields
+                if ($r3[$tb_field] != $result) {
+                    $data['tb_' . $field] = $result;
+                }
+            }
+        }
+
+        // Do checkbox analysis when not locked and all individual checkbox options have been compared
+        if ($r3['tb_q6'] != "99") {
+            $data['tb_q6'] = $checkboxResult;
+        }
+
+
+        // Let's get the 'global' result
+        $score = '';
+        if ($counts[3] > 0) {
+            $score = 3;
+        } elseif ($counts[1] > 0  && $counts[2] == 0) {
+            $score = 1;
+        } elseif ($counts[1] == 0 && $counts[2] > 0) {
+            $score = 2;
+        } else {
+            $this->emError("Unable to score: ", $counts);
+        }
+        $this->emDebug("final result: " . $score . " : " . json_encode($counts));
+
+        // Update if different
+        if ($r3['tb_results'] != $score)               $data['tb_results'] = $score;
+
+        // Set form as done!
+        if ($r3[self::TB_FORM . '_complete'] != "2")   $data[self::TB_FORM . '_complete'] = "2";
+
+        // Return if there is no data to update
+        if (empty($data)) return false;
+
+        // Update
+        $update = array_merge($r3, $data);
+
+        // Remove form-status fields from not-used forms so they don't change red in REDCap
+        unset($update[self::ADJ_FORM . "_complete"]);
+        unset($update[self::QC_FORM . "_complete"]);
+
+        $this->emDebug('Updating Tie Breaker', $data, $update);
+
+        $q = REDCap::saveData('json', json_encode(array($update)));
+        if (!empty($q['errors'])) {
+            $this->emError("Error updating tiebreaker", $update, $q);
+            return "Error updating tiebreaker for " . $r3['record_id'];
+        } else {
+            return "#" . $r3['record_id'] . " Tiebreaker Updated as $score"; // . json_encode($data);
         }
     }
 
@@ -703,7 +790,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         //$filter = "[ekg_review_complete] = '2'";
         $q = REDCap::getData('json', null, null, null, null, false, true, false, $filter);
         $records = json_decode($q,true);
-        $this->emDebug("Found " . count($records) . " records with filter = $filter");
+        $this->emDebug("Found " . count($records) . " records (with filter = $filter)");
         return $records;
     }
 
