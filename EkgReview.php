@@ -370,6 +370,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         return $locked_questions;
     }
 
+
     /**
      * Take a node from the record summary to generate a progress object
      * @param null $dag_name
@@ -430,7 +431,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             </div>
         <?php
     }
-
 
 
     /**
@@ -946,6 +946,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         }
 
     }
+
 
     /** A recursive ksort */
     function ksort_recursive(&$array)
