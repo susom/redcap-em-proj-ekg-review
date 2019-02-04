@@ -93,7 +93,7 @@ foreach ($map as $object_name => $versions) {
                     if ($diff && in_array($field,$module::TB_LOCK_CBX_FIELDS)) $clearAllCheckboxes = true;
 
                     // SET LOCKED FIELDS
-                    if (! $diff && in_array($field, $module::TB_LOCK_FIELDS)) {
+                    if (! $diff && in_array($field, $module::TB_FIELDS)) {
                         $lockFields[] = $field;
                     }
                 }
