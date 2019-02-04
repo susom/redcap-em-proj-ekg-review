@@ -97,8 +97,8 @@ foreach ($map as $object_name => $versions) {
                     $diff = $versions[1]['cross_reviewer_results___' . $field] == 0;
 
                     // If they were the same, then lets copy over the value
-                    if ($diff === false) $v3[$field] = $value;
-                    // $v3[$field] = $diff === true ? "" : $value;
+                    // if ($diff === false) $v3[$field] = $value;
+                    $v3[$field] = ( $diff === true ? "" : $value );
 
                     // IF CHECKBOX, NEED TO CLEAR ALL CHECKBOXES
                     if ($diff === true && in_array($field,$module::TB_LOCK_CBX_FIELDS)) $clearAllCheckboxes = true;
