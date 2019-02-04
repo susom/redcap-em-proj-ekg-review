@@ -609,11 +609,15 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Let's get the 'global' result
         $score = '';
         if ($counts[3] > 0) {
-            $score = 3;
+            // Entered entirely new answers that are different than reviewer 1 and 2
+            $score = 4;
         } elseif ($counts[1] > 0  && $counts[2] == 0) {
             $score = 1;
         } elseif ($counts[1] == 0 && $counts[2] > 0) {
             $score = 2;
+        } elseif ($counts[1] > 0 && $counts[2] > 0) {
+            // Agreed with a mix of reviewers 1 and 2
+            $score = 3;
         } else {
             $this->emError("Unable to score: ", $counts);
         }
@@ -635,7 +639,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         unset($update[self::ADJ_FORM . "_complete"]);
         unset($update[self::QC_FORM . "_complete"]);
 
-        $this->emDebug('Updating Tie Breaker', $data, $update);
+        $this->emDebug('Updating Tie Breaker', json_encode($data)); //, $update);
 
         $q = REDCap::saveData('json', json_encode(array($update)));
         if (!empty($q['errors'])) {
@@ -645,7 +649,6 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             return "#" . $r3['record_id'] . " Tiebreaker Updated as $score"; // . json_encode($data);
         }
     }
-
 
 
     /**
