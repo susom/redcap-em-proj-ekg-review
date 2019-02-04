@@ -5,10 +5,6 @@
  * The purpose of this page is to go create tiebreaker records
  */
 
-use REDCap;
-
-
-
 // Step 1 - load all records
 $records = $module->getRecords();
 $module->emDebug("Found " . count($records) . " records");
