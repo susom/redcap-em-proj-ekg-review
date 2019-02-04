@@ -271,6 +271,49 @@ $('document').ready( function() {
             $('input[name="reviewer"]').val(EKGEM.userid);
         }
 
+
+        // Register shazam display function to handle locking
+        Shazam.beforeDisplayCallback = function() {
+            // console.log('BeforeDisplayCallback to Lock');
+
+            // Check for locking fields
+            $.each(EKGEM.locked, function(i,j) {
+                console.log("Locking" , j);
+                let radios = $('input[name="' + j + '___radio"]');
+                let inputs = $('input[name="' + j + '"]');
+                let checkboxes = $('input[name="__chkn__' + j + '"]');
+
+                if (radios.length) {
+                    console.log('found Radio', j, radios);
+                    // Disable radio input
+                    radios.attr('disabled',true);
+
+                    // Disable parent div's click event handler
+                    radios.closest('div').prop("onclick", null).off("click");
+
+                    // Disable parent div's click event handler
+                    console.log("DFLEX", radios.closest('.d-flex'));
+                    radios.closest('.d-flex').addClass('disabled-question');
+                    // radios.closest('.d-flex').css({"background":"#ccc","border-radius":"3px"});
+                }
+
+                if (checkboxes.length) {
+                    console.log('found checkbox', j, inputs);
+                    checkboxes.attr('disabled',true);
+                    checkboxes.closest('.d-flex').addClass('disabled-question');
+                }
+
+                if (inputs.length) {
+                    console.log('found input', j, inputs);
+                    inputs.attr('disabled',true);
+                    inputs.closest('.d-flex').addClass('disabled-question');
+                    // radios.closest('.d-flex').css({"background":"#ccc","border-radius":"3px"});
+                }
+            });
+
+        }; // Shazam Callback
+
+
      } //DAG
 
 

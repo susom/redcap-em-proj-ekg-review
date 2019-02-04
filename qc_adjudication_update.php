@@ -5,13 +5,15 @@
  * The purpose of this page is to go through records to update QC / Adjudication settings
  */
 
+use REDCap;
+
 // Make a debug array
 $debug = [];
 
 // Step 1 - load all records
 $records = $module->getRecords();
 
-$module->emDebug("Found " . count($records) . " records");
+// $module->emDebug("Found " . count($records) . " records");
 
 // Step 2 - make a map array that has object_name => version => [ $record data ]
 $map = [];
@@ -26,7 +28,7 @@ foreach ($records as $record) {
     $map[$object_name][$object_version] = $record;
 }
 $debug[] = "Analyzing " . count($map) . " objects...";
-$module->emDebug("Made map of " . count($map) . " objects");
+// $module->emDebug("Made map of " . count($map) . " objects");
 //- here are two: ", array_slice($map,0,2));
 
 
@@ -40,7 +42,7 @@ $module->emDebug("Made map of " . count($map) . " objects");
 // Step 4 - do some version comparisons
 foreach ($map as $object_name => $versions) {
 
-    $module->emDebug("In $object_name with versions: " . json_encode(array_keys($versions)));
+    // $module->emDebug("In $object_name with versions: " . json_encode(array_keys($versions)));
 
     if (isset($versions[1]) && isset($versions[99])) {
         // we have a QC check
@@ -54,26 +56,25 @@ foreach ($map as $object_name => $versions) {
         if ($result !== false) $debug[] = "Adjudication\t$object_name\t" . $result;
     }
 
-    if (isset($versions[3]) && isset($versions[1]) && isset($versions[2])) {
+    if (isset($versions[1]) && isset($versions[2]) && isset($versions[3])) {
         // We have a tie breaker record
-        // INCOMPLETE
+        // $module->emDebug('Doing tiebreaker for: ', json_encode(array_keys($versions)));
         $result = $module->doTieBreaker($versions);
-
-
+        if ($result !== false) $debug[] = "Tie Breaker\t$object_name\t" . $result;
     }
 
 }
+
 
 require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 
 
 if (count($debug) == 1) $debug[] = "No changes were detected.";
-
 // DEBUG
 if (!empty($debug)) {
     ?>
     <hr>
-    <h4>QC and Adjudication Update <span class='badge badge-secondary'><?php echo count($debug) ?></span>
+    <h4>QC, Adjudication, and Tie Breaker Update <span class='badge badge-secondary'><?php echo count($debug) ?></span>
         <button class="btn btn-xs btn-primary" type="button" data-toggle="collapse" data-target="#collapseDebug" aria-expanded="false" aria-controls="collapseDebug">
             Toggle Results
         </button>
@@ -83,4 +84,3 @@ if (!empty($debug)) {
     </div>
     <?php
 }
-
