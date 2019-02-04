@@ -90,15 +90,22 @@ foreach ($map as $object_name => $versions) {
                 $query = 'cross_reviewer_results';
 
                 if (in_array($field, $module::QUESTION_FIELDS)) {
+                    // Make a result field
+                    $tb_field = "tb_".$field;
+
+                    // See if we marked these as different
                     $diff = $versions[1]['cross_reviewer_results___' . $field] == 0;
-                    $v3[$field] = $diff ? "" : $value;
-                    // $module->emDebug($field, $diff);
+
+                    // If they were the same, then lets copy over the value
+                    if ($diff === false) $v3[$field] = $value;
+                    // $v3[$field] = $diff === true ? "" : $value;
 
                     // IF CHECKBOX, NEED TO CLEAR ALL CHECKBOXES
-                    if ($diff && in_array($field,$module::TB_LOCK_CBX_FIELDS)) $clearAllCheckboxes = true;
+                    if ($diff === true && in_array($field,$module::TB_LOCK_CBX_FIELDS)) $clearAllCheckboxes = true;
 
                     // SET LOCKED FIELDS
-                    if (! $diff && in_array($field, $module::TB_FIELDS)) {
+                    if ($diff === false && in_array($tb_field,$module::TB_FIELDS)) {
+                        //$module->emDebug("Locking $field");
                         $lockFields[] = $field;
                     }
                 }
@@ -110,6 +117,7 @@ foreach ($map as $object_name => $versions) {
             } else {
                 // Lock Q6 since they are the same
                 $lockFields[] = 'q6';
+                //$module->emDebug("Locking q6");
             }
 
             // Set up the rest of the fields
