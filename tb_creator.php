@@ -13,11 +13,15 @@ use REDCap;
 $records = $module->getRecords();
 $module->emDebug("Found " . count($records) . " records");
 
+$max_id = 0;
+
 // Step 2 - make a map array that has object_name => version => [ $record data ]
 $map = [];
 foreach ($records as $record) {
     $object_name    = $record['object_name'];
     $object_version = $record['object_version'];
+
+    $max_id = max($max_id, intval($record['record_id']));
 
     // Make an array for each object to hold versions and records
     if (!isset($map[$object_name])) $map[$object_name] = [];
@@ -27,6 +31,7 @@ foreach ($records as $record) {
 }
 $debug[] = "Analyzing " . count($map) . " objects...";
 $module->emDebug("Made map of " . count($map) . " objects");
+$module->emDebug("Max existing ID is $max_id");
 //- here are two: ", array_slice($map,0,2));
 
 
@@ -34,6 +39,10 @@ $module->emDebug("Made map of " . count($map) . " objects");
 $tbs = [];
 $existing_tbs = 0;
 $complete_tbs = 0;
+
+// Starting new records at 3000
+$new_id = max($max_id + 1, 3000);
+
 foreach ($map as $object_name => $versions) {
 
     if (isset($versions[3])) {
@@ -70,12 +79,13 @@ foreach ($map as $object_name => $versions) {
 
             // Lets make a version 3 csv for import and start with version 1
             $v3 = [
-                "record_id"                => "",
+                "record_id"                => $new_id,
                 "redcap_data_access_group" => '',
                 "object_name"              => $versions[1]['object_name'],
                 "object_version"           => 3
             ];
 
+            $new_id++;
             $clearAllCheckboxes = false;
             $lockFields = $module::TB_LOCK_ALWAYS;
 
@@ -86,7 +96,6 @@ foreach ($map as $object_name => $versions) {
                 if (in_array($field, $module::QUESTION_FIELDS)) {
                     $diff = $versions[1]['cross_reviewer_results___' . $field] == 0;
                     $v3[$field] = $diff ? "" : $value;
-
                     // $module->emDebug($field, $diff);
 
                     // IF CHECKBOX, NEED TO CLEAR ALL CHECKBOXES
@@ -110,12 +119,12 @@ foreach ($map as $object_name => $versions) {
             // Set up the rest of the fields
             $v3['ekg_review_complete'] = 0;
 
-            $v3['v1_record_id']        = $versions[1]['record_id'];
-            $v3['v1_reviewer']         = $versions[1]['reviewer'];
-            $v3['v2_record_id']        = $versions[2]['record_id'];
-            $v3['v2_reviewer']         = $versions[2]['reviewer'];
-
-            // foreach ($lockFields as $field) $v3['tb_locked___' . $field] = 1;
+            $v3['v1_record_id'] = $versions[1]['record_id'];
+            $v3['v1_reviewer']  = $versions[1]['reviewer'];
+            $v3['v1_dag']       = $versions[1]['redcap_data_access_group'];
+            $v3['v2_record_id'] = $versions[2]['record_id'];
+            $v3['v2_reviewer']  = $versions[2]['reviewer'];
+            $v3['v2_dag']       = $versions[2]['redcap_data_access_group'];
 
             // Initialize so we have same columns in all arrays... (ugly)
             foreach ($module::TB_FIELDS as $tb_field) {
@@ -130,7 +139,6 @@ foreach ($map as $object_name => $versions) {
 
             // Add the record to the list of tie breakers
             $tbs[] = $v3;
-
             // $module->emDebug($v3);
         }
     }
