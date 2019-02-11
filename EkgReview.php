@@ -355,7 +355,22 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function getLockedQuestions($record_data) {
         $locked_questions = [];
+
+        // TIE BREAKER
         if ($record_data['object_version'] == "3") {
+
+            foreach(self::TB_FIELDS as $tb_field) {
+                $field = substr($tb_field,3);
+
+                if (isset($record_data[$tb_field]) && $record_data[$tb_field] == '99') {
+                    // This field should be locked!
+                    array_push($locked_questions, $field);
+                }
+            }
+        }
+
+        // COMMITTEE TIE BREAKER
+        if ($record_data['object_version'] == "4") {
 
             foreach(self::TB_FIELDS as $tb_field) {
                 $field = substr($tb_field,3);
