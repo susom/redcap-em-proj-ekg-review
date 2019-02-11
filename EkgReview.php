@@ -551,17 +551,15 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Because there are multiple checkbox questions and we are treating 'any' difference as an overall difference,
         // we need to go all options first before we can make the final determination
         $checkboxResult = "";
+        $checkboxMatches = ["1" => 0, "2" => 0];
 
         foreach (self::QUESTION_FIELDS as $field) {
 
             $r1_val = $r1[$field];
             $r2_val = $r2[$field];
             $r3_val = $r3[$field];
-
             $result = null;
-
             $isCheckbox = in_array($field, self::TB_LOCK_CBX_FIELDS);
-
             $tb_field = $isCheckbox ? 'tb_q6' : 'tb_' . $field;
 
             // Skip any fields that we aren't tracking
@@ -570,8 +568,13 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             if ($r3[$tb_field] == "99") {
                 // This was a locked field - no need to change anything
                 $result = 99;
+            } elseif ($isCheckbox) {
+                // For checkboxes, we need to track if ALL questions match 1 or 2 or neither.
+                if ($r3_val == $r1_val)                         $checkboxMatches[1]++;
+                if ($r3_val == $r2_val)                         $checkboxMatches[2]++;
+                if ($r3_val != $r1_val AND $r3_val != $r2_val)  $checkboxMatches[3]++;
             } else {
-
+                // For non-checkbox questions we can just check
                 if ($r3_val == $r1_val) {
                     $result = 1;
                 } elseif ($r3_val == $r2_val) {
@@ -581,18 +584,9 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
                     $result = 3;
                 }
                 $this->emDebug("Comparing " . $r3['record_id'] . " $field: " . $r1_val . " vs " . $r2_val . " | " . $r3_val . " => result: " . $result);
-            }
-            $counts[$result]++;
 
+                $counts[$result]++;
 
-            if ($isCheckbox) {
-                if (empty($checkboxResult)) {
-                    // Initialize with first comparison result:
-                    $checkboxResult = $result;
-                } else if ($result != $checkboxResult) {
-                    $checkboxResult = '3';
-                }
-            } else {
                 // Make the result field for non-checkbox fields
                 if ($r3[$tb_field] != $result) {
                     $data['tb_' . $field] = $result;
@@ -600,9 +594,20 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             }
         }
 
-        // Do checkbox analysis when not locked and all individual checkbox options have been compared
+        // Do checkbox analysis after we have looked at each checkbox value
         if ($r3['tb_q6'] != "99") {
-            $data['tb_q6'] = $checkboxResult;
+            $boxCount = count(self::TB_LOCK_CBX_FIELDS );
+            if ($checkboxMatches[1] == $boxCount) {
+                $result = 1;
+            } elseif ($checkboxMatches[2] == $boxCount) {
+                $result = 2;
+            } else {
+                // We don't have a clean match
+                $result = 3;
+            }
+            $this->emDebug("Comparing " . $r3['record_id'] . " tb_q6: " . json_encode($checkboxMatches) . " => " . $result);
+            $data['tb_q6'] = $result;
+            $counts[$result]++;
         }
 
 

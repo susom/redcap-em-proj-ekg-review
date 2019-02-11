@@ -23,3 +23,7 @@ foreach ($dag_names as $dag_name) {
     $module->renderProgressArea($progress, "$dag_name Progress", true);
 }
 
+?>
+<br>
+<?php echo count($module->rs[$module::UNASSIGNED]['records']) ?> record(s) are unassigned and can be taken by any reviewer.
+
