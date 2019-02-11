@@ -69,7 +69,7 @@ foreach ($map as $object_name => $versions) {
             $v4["v3_dag"]                        = $versions[3]['redcap_data_access_group'];
 
             $v4["record_id"]                     = $new_id;
-            $v4["redcap_data_access_group"]      = '';
+            $v4["redcap_data_access_group"]      = 'committee';
             $v4["object_version"]                = 4;
             $v4[$module::EKG_FORM . "_complete"] = '0';
             $v4[$module::TB_FORM . "_complete"]  = '0';
