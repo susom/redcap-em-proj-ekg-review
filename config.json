@@ -39,9 +39,14 @@
         "url": "recordset_creator.php"
       },
       {
-        "name": "EKG TieBreaker Recordset Creator",
+        "name": "EKG TieBreaker v3 Creator",
         "icon": "gear",
         "url": "tb_creator.php"
+      },
+      {
+        "name": "EKG TieBreaker v4 (committee) Creator",
+        "icon": "gear",
+        "url": "committee_creator.php"
       },
       {
         "name": "EKG GCP Bucket Contents",
@@ -49,7 +54,7 @@
         "url": "bucket_contents.php"
       },
       {
-        "name": "EKG Update Adjudication/QC Fields",
+        "name": "EKG Update Adjudication",
         "icon": "arrow_refresh",
         "url": "qc_adjudication_update.php"
       },
