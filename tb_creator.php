@@ -17,7 +17,8 @@ foreach ($records as $record) {
     $object_name    = $record['object_name'];
     $object_version = $record['object_version'];
 
-    $max_id = max($max_id, intval($record['record_id']));
+    // Keep in 30k range
+    if ($current_record_id < 40000) $max_id = max($max_id, $current_record_id);
 
     // Make an array for each object to hold versions and records
     if (!isset($map[$object_name])) $map[$object_name] = [];
