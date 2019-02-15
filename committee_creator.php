@@ -47,7 +47,7 @@ foreach ($map as $object_name => $versions) {
         // Already have an existing v4 committee tiebreaker
         //$module->emDebug($object_name . " already has v3");
         $existing_tbs++;
-        if ($versions[4][$module::TB_FORM . "_complete"] == "2") $complete_tbs++;
+        if ($versions[4][$module::EKG_FORM . "_complete"] == "2") $complete_tbs++;
     } elseif(isset($versions[1]) && isset($versions[2]) && isset($versions[3])) {
 
         // We have a potential need for a 4rd check
