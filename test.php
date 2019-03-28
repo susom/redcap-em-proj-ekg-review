@@ -1,8 +1,71 @@
 <?php
 /** @var \Stanford\EkgReview\EkgReview $module */
 
+require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 
-echo "Test";
+if ($module->getProjectId() != '33') {
+    exit("Wrong Project (expecting 33)");
+}
+
+// This project contains the actual tie breaker data.
+$tb_query = REDCap::getData(33,'json');
+
+$tb_data = json_decode($tb_query,true);
+
+$fields = REDCap::getFieldNames($module::EKG_FORM);
+$final_query = REDCap::getData(34,'json', null, $fields);
+$final_raw = json_decode($final_query, true);
+$final_data = [];
+// Convert json output to record_id keyed array
+foreach ($final_raw as $r) {
+    $id = $r['record_id'];
+    $final_data[$id] = $r;
+}
+unset($final_raw);
+
+
+echo "<pre>";
+
+
+// echo print_r(array_slice($final_data,0,10));
+
+foreach ($tb_data as $record) {
+    $id = $record['record_id'];
+    $reviewer = $final_data[$id]['reviewer'];
+
+    foreach ($module::TB_FIELDS as $tb_field) {
+        if ($record[$tb_field] == 99) {
+            if ($tb_field == 'tb_q6') {
+                // Loop through checkbox fields:
+                foreach ($module::TB_LOCK_CBX_FIELDS as $cbx_field) {
+                    $set_val = $record[$cbx_field];
+                    $final_val = $final_data[$id][$cbx_field];
+
+                    if ($set_val != $final_val) {
+//                        echo "$id: $tb_field ($reviewer) was locked so $cbx_field initial value '$set_val' should have equalled the final value '$final_val'\n";\
+                        echo "$id\t$tb_field\t$reviewer\t$cbx_field\t$set_val\t$final_val\n";
+
+
+                    }
+                }
+            } else {
+                $q_field = substr($tb_field,3);
+
+                $set_val = $record[$q_field];
+                $final_val = $final_data[$id][$q_field];
+
+                if ($set_val != $final_val AND !in_array($q_field, array('q7','q8'))) {
+//                    echo "$id: $tb_field ($reviewer) was locked so $q_field initial value '$set_val' should have equalled the final value of '$final_val' \n";
+                    echo "$id\t$tb_field\t$reviewer\t$q_field\t$set_val\t$final_val\n";
+                }
+            }
+        }
+    }
+
+
+}
+echo "</pre>";
+
 
 exit();
 
