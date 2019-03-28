@@ -93,8 +93,9 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
         // Build a record summary object
         // For each DAG a child summary object will be added
         $rs = [
-            "total"             => 0,
-            "total_completed"   => 0
+            "total"            => 0,
+            "total_complete"   => 0,
+            "duration"         => 0
         ];
 
         // Loop through the records to build the aggregate summary
@@ -105,7 +106,7 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
             $object_version         = $record['object_version'];
             $form_status            = $record['ekg_review_complete'];
             $adjudication_required  = $record['adjudication_required___1'];
-            $qc_results              = $record['qc_results'];
+            $qc_results             = $record['qc_results'];
             $start_time             = $record['start_time'];
             $end_time               = $record['end_time'];
 
@@ -124,27 +125,35 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
 
             $rs[$group]['total']++;
             if ($form_status == '2') $rs[$group]['total_complete']++;
+
             $duration = empty($end_time) ? 0 : strtotime($end_time) - strtotime($start_time);
             $rs[$group]['duration'] += $duration;
 
             // Keep array of object names for active DAG
             if ($group == $this->dag_name) {
                 array_push($rs[$group]['object_names'], $object_name);
-            } elseif ($group == self::UNASSIGNED) {
+            }
+
+            // Get group of unassigned records as well
+            if ($group == self::UNASSIGNED) {
                 array_push($rs[$group]['records'], $record);
             }
         }
 
-
         // Do aggregate totals for each dag and entire project
-        $rs['duration'] = $rs['total'] = $rs['total_complete'] = 0;
+        // $rs['duration'] = $rs['total'] = $rs['total_complete'] = 0;
+
         foreach ($rs as $dag_name => $data) {
+            // Calc total for DAG
             $rs[$dag_name]['total_percent'] = $data['total'] == 0 ? 100 : round($data['total_complete'] / $data['total'] * 100, 1);
 
-            $rs['duration']         += empty($data['duration']) ? 0 : (int) $data['duration'];
+            // Add dag totals to aggregate totals
             $rs['total']            += $data['total'];
             $rs['total_complete']   += $data['total_complete'];
+            $rs['duration']         += empty($data['duration']) ? 0 : (int) $data['duration'];
         }
+
+        // Calc overall total percent completion
         $rs["total_percent"] = $rs['total'] == 0 ? 100 : round($rs['total_complete'] / $rs['total'] * 100, 1);
 
         // Save to object
@@ -294,8 +303,10 @@ class EkgReview extends \ExternalModules\AbstractExternalModule
      */
     function redcap_data_entry_form_top($project_id, $record = NULL, $instrument, $event_id, $group_id = NULL, $repeat_instance = 1) {
         $review_form = $this->getProjectSetting('review-form');
+        $preview_mode = $this->getProjectSetting('preview-mode');
 
-        if ($instrument == $review_form && $this->isDagUser()) {
+
+        if ($instrument == $review_form && $this->isDagUser() || $preview_mode) {
 
             // Load the current record's data
             $record_data = $this->getRecord($record);

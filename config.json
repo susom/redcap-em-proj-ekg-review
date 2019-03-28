@@ -131,6 +131,13 @@
       "name": "<b>Check to deactivate the review portal</b><br>This will prevent users in DAGs from being able to review additional EKGs",
       "required": false,
       "type": "checkbox"
+    },
+    {
+      "key": "preview-mode",
+      "name": "<b>Preview Mode</b><br>If checked, users not in DAGs will be able to view EKGs in similar editor.",
+      "required": false,
+      "type": "checkbox"
     }
+
   ]
 }
