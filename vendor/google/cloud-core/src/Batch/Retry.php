@@ -62,10 +62,15 @@ class Retry
                 continue;
             }
             while ($line = fgets($fp)) {
+                $jsonDecodedValue = json_decode($line);
+                // Check if data json_encoded after serialization
+                if ($jsonDecodedValue !== null || $jsonDecodedValue !== false) {
+                    $line = $jsonDecodedValue;
+                }
                 $a = unserialize($line);
                 $idNum = key($a);
                 $job = $this->runner->getJobFromIdNum($idNum);
-                if (! $job->run($a[$idNum])) {
+                if (! $job->callFunc($a[$idNum])) {
                     $this->handleFailure($idNum, $a[$idNum]);
                 }
             }

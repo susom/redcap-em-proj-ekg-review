@@ -21,6 +21,8 @@ use Google\Cloud\Core\Iam\IamConnectionInterface;
 
 /**
  * IAM Implementation for GCS Buckets
+ *
+ * @internal
  */
 class IamBucket implements IamConnectionInterface
 {
@@ -42,6 +44,11 @@ class IamBucket implements IamConnectionInterface
      */
     public function getPolicy(array $args)
     {
+        if (isset($args['requestedPolicyVersion'])) {
+            $args['optionsRequestedPolicyVersion'] = $args['requestedPolicyVersion'];
+            unset($args['requestedPolicyVersion']);
+        }
+
         return $this->connection->getBucketIamPolicy($args);
     }
 

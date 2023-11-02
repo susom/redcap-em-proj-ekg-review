@@ -20,7 +20,9 @@ namespace Google\Cloud\Storage;
 use Google\Cloud\Core\Iterator\ItemIteratorTrait;
 
 /**
- * Iterates over a set of {@see Google\Cloud\Storage\StorageObject} items.
+ * ObjectIterator
+ *
+ * Iterates over a set of {@see StorageObject} items.
  */
 class ObjectIterator implements \Iterator
 {
@@ -34,6 +36,8 @@ class ObjectIterator implements \Iterator
      */
     public function prefixes()
     {
-        return $this->pageIterator->prefixes();
+        return method_exists($this->pageIterator, 'prefixes')
+            ? $this->pageIterator->prefixes()
+            : [];
     }
 }

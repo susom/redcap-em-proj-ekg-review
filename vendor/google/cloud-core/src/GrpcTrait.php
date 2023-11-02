@@ -17,13 +17,11 @@
 
 namespace Google\Cloud\Core;
 
-use DateTime;
-use DateTimeZone;
 use Google\ApiCore\CredentialsWrapper;
-use Google\Auth\Cache\MemoryCacheItemPool;
-use Google\Auth\FetchAuthTokenCache;
 use Google\Cloud\Core\ArrayTrait;
+use Google\Cloud\Core\Duration;
 use Google\Cloud\Core\Exception\NotFoundException;
+use Google\Cloud\Core\Exception\ServiceException;
 use Google\Cloud\Core\GrpcRequestWrapper;
 use Google\Protobuf\NullValue;
 
@@ -69,13 +67,15 @@ trait GrpcTrait
      * @param array $args
      * @param bool $whitelisted
      * @return \Generator|array
+     * @throws ServiceException
      */
     public function send(callable $request, array $args, $whitelisted = false)
     {
         $requestOptions = $this->pluckArray([
             'grpcOptions',
             'retries',
-            'requestTimeout'
+            'requestTimeout',
+            'grpcRetryFunction'
         ], $args[count($args) - 1]);
 
         try {
@@ -98,15 +98,29 @@ trait GrpcTrait
      */
     private function getGaxConfig($version, callable $authHttpHandler = null)
     {
-        return [
-            'credentials' => new CredentialsWrapper(
-                $this->requestWrapper->getCredentialsFetcher(),
-                $authHttpHandler
-            ),
+        $config = [
             'libName' => 'gccl',
             'libVersion' => $version,
-            'transport' => 'grpc',
+            'transport' => 'grpc'
         ];
+
+        // GAX v0.32.0 introduced the CredentialsWrapper class and a different
+        // way to configure credentials. If the class exists, use this new method
+        // otherwise default to legacy usage.
+        if (class_exists(CredentialsWrapper::class)) {
+            $config['credentials'] = new CredentialsWrapper(
+                $this->requestWrapper->getCredentialsFetcher(),
+                $authHttpHandler
+            );
+        } else {
+            $config += [
+                'credentialsLoader' => $this->requestWrapper->getCredentialsFetcher(),
+                'authHttpHandler' => $authHttpHandler,
+                'enableCaching' => false
+            ];
+        }
+
+        return $config;
     }
 
     /**
@@ -224,6 +238,8 @@ trait GrpcTrait
 
                 return ['list_value' => $this->formatListForApi($value)];
         }
+
+        return [];
     }
 
     /**
@@ -258,5 +274,46 @@ trait GrpcTrait
             'seconds' => (int) $dt->format('U'),
             'nanos' => (int) $nanos
         ];
+    }
+
+    /**
+     * Format a duration for the API.
+     *
+     * @param string|Duration $value
+     * @return array
+     */
+    private function formatDurationForApi($value)
+    {
+        if (is_string($value)) {
+            $d = explode('.', trim($value, 's'));
+            if (count($d) < 2) {
+                $seconds = $d[0];
+                $nanos = 0;
+            } else {
+                $seconds = (int) $d[0];
+                $nanos = $this->convertFractionToNanoSeconds($d[1]);
+            }
+        } elseif ($value instanceof Duration) {
+            $d = $value->get();
+            $seconds = $d['seconds'];
+            $nanos = $d['nanos'];
+        }
+
+        return [
+            'seconds' => $seconds,
+            'nanos' => $nanos
+        ];
+    }
+
+    /**
+     * Construct a gapic client. Allows for tests to intercept.
+     *
+     * @param string $gapicName
+     * @param array $config
+     * @return mixed
+     */
+    protected function constructGapic($gapicName, array $config)
+    {
+        return new $gapicName($config);
     }
 }

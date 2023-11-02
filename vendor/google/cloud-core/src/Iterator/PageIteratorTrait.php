@@ -146,6 +146,7 @@ trait PageIteratorTrait
      *
      * @return null
      */
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         $this->itemCount = 0;
@@ -169,6 +170,7 @@ trait PageIteratorTrait
      *
      * @return array|null
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         if ($this->page === null) {
@@ -189,6 +191,7 @@ trait PageIteratorTrait
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->position;
@@ -199,6 +202,7 @@ trait PageIteratorTrait
      *
      * @return null
      */
+    #[\ReturnTypeWillChange]
     public function next()
     {
         $this->position++;
@@ -212,6 +216,7 @@ trait PageIteratorTrait
      *
      * @return bool
      */
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         if (!$this->page && $this->position) {
@@ -289,13 +294,17 @@ trait PageIteratorTrait
      */
     private function get(array $path, array $array)
     {
-        $temp = &$array;
+        $result = $array;
 
         foreach ($path as $key) {
-            $temp = &$temp[$key];
+            if (!isset($result[$key])) {
+                return null;
+            }
+
+            $result = $result[$key];
         }
 
-        return $temp;
+        return $result;
     }
 
     /**

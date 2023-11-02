@@ -30,7 +30,7 @@ class ExponentialBackoff
     private $retries;
 
     /**
-     * @var callable
+     * @var callable|null
      */
     private $retryFunction;
 
@@ -40,16 +40,39 @@ class ExponentialBackoff
     private $delayFunction;
 
     /**
-     * @param int $retries [optional] Number of retries for a failed request.
-     * @param callable $retryFunction [optional] returns bool for whether or not to retry
+     * @var callable|null
      */
-    public function __construct($retries = null, callable $retryFunction = null)
-    {
+    private $calcDelayFunction;
+
+    /**
+     * @var callable|null
+     */
+    private $retryListener;
+
+    /**
+     * @param int $retries [optional] Number of retries for a failed request.
+     * @param callable $retryFunction [optional] returns bool for whether or not
+     *        to retry
+     * @param callable $retryListener [optional] Runs after the
+     *        $retryFunction. Unlike the $retryFunction,this function isn't
+     *        responsible to decide if a retry should happen or not, but it gives the
+     *        users flexibility to consume exception messages and add custom logic.
+     *        Function definition should match:
+     *            function (\Exception $e, int $attempt, array $arguments): array
+     *        Ex: One might want to change headers on every retry, this function can
+     *        be used to achieve such a functionality.
+     */
+    public function __construct(
+        $retries = null,
+        callable $retryFunction = null,
+        callable $retryListener = null
+    ) {
         $this->retries = $retries !== null ? (int) $retries : 3;
         $this->retryFunction = $retryFunction;
+        $this->retryListener = $retryListener;
         // @todo revisit this approach
         // @codeCoverageIgnoreStart
-        $this->delayFunction = function ($delay) {
+        $this->delayFunction = static function ($delay) {
             usleep($delay);
         };
         // @codeCoverageIgnoreEnd
@@ -66,15 +89,15 @@ class ExponentialBackoff
     public function execute(callable $function, array $arguments = [])
     {
         $delayFunction = $this->delayFunction;
+        $calcDelayFunction = $this->calcDelayFunction ?: [$this, 'calculateDelay'];
         $retryAttempt = 0;
         $exception = null;
-
         while (true) {
             try {
                 return call_user_func_array($function, $arguments);
             } catch (\Exception $exception) {
                 if ($this->retryFunction) {
-                    if (!call_user_func($this->retryFunction, $exception)) {
+                    if (!call_user_func($this->retryFunction, $exception, $retryAttempt)) {
                         throw $exception;
                     }
                 }
@@ -83,8 +106,16 @@ class ExponentialBackoff
                     break;
                 }
 
-                $delayFunction($this->calculateDelay($retryAttempt));
+                $delayFunction($calcDelayFunction($retryAttempt));
                 $retryAttempt++;
+                if ($this->retryListener) {
+                    // Developer can modify the $arguments using the retryListener
+                    // callback.
+                    call_user_func_array(
+                        $this->retryListener,
+                        [$exception, $retryAttempt, &$arguments]
+                    );
+                }
             }
         }
 
@@ -92,6 +123,8 @@ class ExponentialBackoff
     }
 
     /**
+     * If not set, defaults to using `usleep`.
+     *
      * @param callable $delayFunction
      * @return void
      */
@@ -101,12 +134,24 @@ class ExponentialBackoff
     }
 
     /**
+     * If not set, defaults to using
+     * {@see \Google\Cloud\Core\ExponentialBackoff::calculateDelay()}.
+     *
+     * @param callable $calcDelayFunction
+     * @return void
+     */
+    public function setCalcDelayFunction(callable $calcDelayFunction)
+    {
+        $this->calcDelayFunction = $calcDelayFunction;
+    }
+
+    /**
      * Calculates exponential delay.
      *
-     * @param int $attempt
+     * @param int $attempt The attempt number used to calculate the delay.
      * @return int
      */
-    private function calculateDelay($attempt)
+    public static function calculateDelay($attempt)
     {
         return min(
             mt_rand(0, 1000000) + (pow(2, $attempt) * 1000000),

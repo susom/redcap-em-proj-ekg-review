@@ -31,7 +31,13 @@ class MetadataProviderUtils
     public static function autoSelect($server)
     {
         if (isset($server['GAE_SERVICE'])) {
+            if (isset($server['GAE_ENV']) && $server['GAE_ENV'] === 'standard') {
+                return new GAEStandardMetadataProvider($server);
+            }
             return new GAEFlexMetadataProvider($server);
+        }
+        if (!empty(getenv('K_CONFIGURATION'))) {
+            return new CloudRunMetadataProvider(getenv());
         }
         return new EmptyMetadataProvider();
     }

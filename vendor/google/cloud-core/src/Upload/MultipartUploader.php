@@ -18,8 +18,11 @@
 namespace Google\Cloud\Core\Upload;
 
 use Google\Cloud\Core\JsonTrait;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Multipart upload implementation.
@@ -34,6 +37,44 @@ class MultipartUploader extends AbstractUploader
      * @return array
      */
     public function upload()
+    {
+        return $this->jsonDecode(
+            $this->requestWrapper->send(
+                $this->prepareRequest(),
+                $this->requestOptions
+            )->getBody(),
+            true
+        );
+    }
+
+    /**
+     * Triggers the upload process asynchronously.
+     *
+     * @return PromiseInterface<array>
+     * @experimental The experimental flag means that while we believe this method
+     *      or class is ready for use, it may change before release in backwards-
+     *      incompatible ways. Please use with caution, and test thoroughly when
+     *      upgrading.
+     */
+    public function uploadAsync()
+    {
+        return $this->requestWrapper->sendAsync(
+            $this->prepareRequest(),
+            $this->requestOptions
+        )->then(function (ResponseInterface $response) {
+            return $this->jsonDecode(
+                $response->getBody(),
+                true
+            );
+        });
+    }
+
+    /**
+     * Prepares a multipart upload request.
+     *
+     * @return RequestInterface
+     */
+    private function prepareRequest()
     {
         $multipartStream = new Psr7\MultipartStream([
             [
@@ -50,20 +91,18 @@ class MultipartUploader extends AbstractUploader
 
         $headers = [
             'Content-Type' => 'multipart/related; boundary=boundary',
-            'Content-Length' => $multipartStream->getSize()
         ];
 
-        return $this->jsonDecode(
-            $this->requestWrapper->send(
-                new Request(
-                    'POST',
-                    $this->uri,
-                    $headers,
-                    $multipartStream
-                ),
-                $this->requestOptions
-            )->getBody(),
-            true
+        $size = $multipartStream->getSize();
+        if ($size !== null) {
+            $headers['Content-Length'] = $size;
+        }
+
+        return new Request(
+            'POST',
+            $this->uri,
+            $headers,
+            $multipartStream
         );
     }
 }

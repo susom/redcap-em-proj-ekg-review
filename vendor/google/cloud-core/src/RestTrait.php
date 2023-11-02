@@ -18,6 +18,7 @@
 namespace Google\Cloud\Core;
 
 use Google\Cloud\Core\Exception\NotFoundException;
+use Google\Cloud\Core\Exception\ServiceException;
 
 /**
  * Provides shared functionality for REST service implementations.
@@ -79,13 +80,20 @@ trait RestTrait
      * @param array $options [optional] Options used to build out the request.
      * @param array $whitelisted [optional]
      * @return array
+     * @throws ServiceException
      */
     public function send($resource, $method, array $options = [], $whitelisted = false)
     {
+        $options += [
+            'prettyPrint' => false,
+        ];
         $requestOptions = $this->pluckArray([
             'restOptions',
             'retries',
-            'requestTimeout'
+            'retryHeaders',
+            'requestTimeout',
+            'restRetryFunction',
+            'restRetryListener',
         ], $options);
 
         try {
@@ -103,5 +111,27 @@ trait RestTrait
 
             throw $e;
         }
+    }
+
+    /**
+     * Return a custom API endpoint in the proper format, or default if none provided.
+     *
+     * @param string $default
+     * @param array $config
+     * @return string
+     */
+    private function getApiEndpoint($default, array $config)
+    {
+        $res = $config['apiEndpoint'] ?? $default;
+
+        if (substr($res, -1) !== '/') {
+            $res = $res . '/';
+        }
+
+        if (strpos($res, '//') === false) {
+            $res = 'https://' . $res;
+        }
+
+        return $res;
     }
 }

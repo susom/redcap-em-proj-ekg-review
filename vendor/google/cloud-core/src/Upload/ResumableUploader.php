@@ -18,9 +18,11 @@
 namespace Google\Cloud\Core\Upload;
 
 use Google\Cloud\Core\Exception\GoogleException;
+use Google\Cloud\Core\Exception\ServiceException;
+use Google\Cloud\Core\Exception\UploadException;
 use Google\Cloud\Core\JsonTrait;
 use Google\Cloud\Core\RequestWrapper;
-use GuzzleHttp\Psr7;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\LimitStream;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
@@ -50,8 +52,8 @@ class ResumableUploader extends AbstractUploader
 
     /**
      * Classes extending ResumableUploader may provide request headers to be
-     * included in {@see Google\Cloud\Core\Upload\ResumableUploader::upload()}
-     * and {@see Google\Cloud\Core\Upload\ResumableUploader::createResumeUri{}}.
+     * included in {@see \Google\Cloud\Core\Upload\ResumableUploader::upload()}
+     * and {@see \Google\Cloud\Core\Upload\ResumableUploader::createResumeUri{}}.
      *
      * @var array
      */
@@ -139,8 +141,11 @@ class ResumableUploader extends AbstractUploader
     /**
      * Triggers the upload process.
      *
+     * Errors are of form [`google.rpc.Status`](https://cloud.google.com/apis/design/errors#error_model),
+     * and may be obtained via {@see \Google\Cloud\Core\Exception\ServiceException::getMetadata()}.
+     *
      * @return array
-     * @throws GoogleException
+     * @throws ServiceException
      */
     public function upload()
     {
@@ -176,9 +181,11 @@ class ResumableUploader extends AbstractUploader
             try {
                 $response = $this->requestWrapper->send($request, $this->requestOptions);
             } catch (GoogleException $ex) {
-                throw new GoogleException(
+                throw new ServiceException(
                     "Upload failed. Please use this URI to resume your upload: $this->resumeUri",
-                    $ex->getCode()
+                    $ex->getCode(),
+                    null,
+                    json_decode($ex->getMessage(), true) ?: []
                 );
             }
 
@@ -190,6 +197,23 @@ class ResumableUploader extends AbstractUploader
         } while ($response->getStatusCode() === 308);
 
         return $this->decodeResponse($response);
+    }
+
+    /**
+     * Currently only the MultiPartUploader supports async.
+     *
+     * Any calls to this will throw a generic Google Exception.
+     *
+     * @return PromiseInterface
+     * @throws GoogleException
+     * @experimental The experimental flag means that while we believe this method
+     *      or class is ready for use, it may change before release in backwards-
+     *      incompatible ways. Please use with caution, and test thoroughly when
+     *      upgrading.
+     */
+    public function uploadAsync()
+    {
+        throw new GoogleException('Currently only the MultiPartUploader supports async.');
     }
 
     /**
@@ -250,7 +274,7 @@ class ResumableUploader extends AbstractUploader
      * Gets the starting range for the upload.
      *
      * @param string $rangeHeader
-     * @return int
+     * @return int|null
      */
     protected function getRangeStart($rangeHeader)
     {

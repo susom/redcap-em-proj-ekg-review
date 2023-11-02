@@ -28,7 +28,7 @@ trait ArrayTrait
      * @param string $key
      * @param array $arr
      * @param bool $isRequired
-     * @return string|null
+     * @return mixed
      * @throws \InvalidArgumentException
      */
     private function pluck($key, array &$arr, $isRequired = true)
@@ -51,7 +51,7 @@ trait ArrayTrait
     /**
      * Pluck a subset of an array.
      *
-     * @param string $keys
+     * @param string[] $keys
      * @param array $arr
      * @return array
      */
@@ -70,12 +70,20 @@ trait ArrayTrait
 
     /**
      * Determine whether given array is associative.
+     * If $arr is empty, then $onEmpty will be returned
+     * $onEmpty defaults to true to maintain compatibility
+     * with the current usage.
      *
      * @param array $arr
+     * @param bool $onEmpty
      * @return bool
      */
-    private function isAssoc(array $arr)
+    private function isAssoc(array $arr, $onEmpty = true)
     {
+        if (empty($arr)) {
+            return $onEmpty;
+        }
+
         return array_keys($arr) !== range(0, count($arr) - 1);
     }
 

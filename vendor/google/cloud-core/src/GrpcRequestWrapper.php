@@ -22,14 +22,12 @@ use Google\Cloud\Core\Exception;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\OperationResponse;
 use Google\ApiCore\PagedListResponse;
-use Google\ApiCore\RetrySettings;
 use Google\ApiCore\Serializer;
 use Google\ApiCore\ServerStream;
 use Google\Protobuf\Internal\Message;
 use Google\Rpc\BadRequest;
 use Google\Rpc\Code;
 use Google\Rpc\RetryInfo;
-use Grpc;
 
 /**
  * The GrpcRequestWrapper is responsible for delivering gRPC requests.
@@ -76,7 +74,7 @@ class GrpcRequestWrapper
     /**
      * @param array $config [optional] {
      *     Configuration options. Please see
-     *     {@see Google\Cloud\Core\RequestWrapperTrait::setCommonDefaults()} for
+     *     {@see \Google\Cloud\Core\RequestWrapperTrait::setCommonDefaults()} for
      *     the other available options.
      *
      *     @type callable $authHttpHandler A handler used to deliver Psr7
@@ -89,9 +87,10 @@ class GrpcRequestWrapper
     public function __construct(array $config = [])
     {
         $this->setCommonDefaults($config);
+
         $config += [
             'authHttpHandler' => null,
-            'serializer' => new Serializer(),
+            'serializer' => new Serializer,
             'grpcOptions' => []
         ];
 
@@ -112,20 +111,25 @@ class GrpcRequestWrapper
      *           request. **Defaults to** `60`.
      *     @type int $retries Number of retries for a failed request.
      *           **Defaults to** `3`.
+     *     @type callable $grpcRetryFunction Sets the conditions for whether or
+     *           not a request should attempt to retry. Function signature should
+     *           match: `function (\Exception $ex) : bool`.
      *     @type array $grpcOptions gRPC specific configuration options.
      * }
      * @return array
+     * @throws Exception\ServiceException
      */
     public function send(callable $request, array $args, array $options = [])
     {
-        $retries = isset($options['retries']) ? $options['retries'] : $this->retries;
-        $grpcOptions = isset($options['grpcOptions']) ? $options['grpcOptions'] : $this->grpcOptions;
-        $timeout = isset($options['requestTimeout']) ? $options['requestTimeout'] : $this->requestTimeout;
-        $backoff = new ExponentialBackoff($retries, function (\Exception $ex) {
-            $statusCode = $ex->getCode();
-
-            return in_array($statusCode, $this->grpcRetryCodes);
-        });
+        $retries = $options['retries'] ?? $this->retries;
+        $retryFunction = $options['grpcRetryFunction']
+            ?? function (\Exception $ex) {
+                $statusCode = $ex->getCode();
+                return in_array($statusCode, $this->grpcRetryCodes);
+            };
+        $grpcOptions = $options['grpcOptions'] ?? $this->grpcOptions;
+        $timeout = $options['requestTimeout'] ?? $this->requestTimeout;
+        $backoff = new ExponentialBackoff($retries, $retryFunction);
 
         if (!isset($grpcOptions['retrySettings'])) {
             $retrySettings = [
@@ -142,8 +146,12 @@ class GrpcRequestWrapper
 
         try {
             return $this->handleResponse($backoff->execute($request, $args));
-        } catch (ApiException $ex) {
-            throw $this->convertToGoogleException($ex);
+        } catch (\Exception $ex) {
+            if ($ex instanceof ApiException) {
+                throw $this->convertToGoogleException($ex);
+            }
+
+            throw $ex;
         }
     }
 
@@ -151,7 +159,7 @@ class GrpcRequestWrapper
      * Serializes a gRPC response.
      *
      * @param mixed $response
-     * @return \Generator|array|null
+     * @return \Generator|OperationResponse|array|null
      */
     private function handleResponse($response)
     {
@@ -179,8 +187,9 @@ class GrpcRequestWrapper
      *
      * @param ServerStream $response
      * @return \Generator|array|null
+     * @throws Exception\ServiceException
      */
-    private function handleStream(ServerStream $response)
+    private function handleStream($response)
     {
         try {
             foreach ($response->readAll() as $count => $result) {
@@ -195,10 +204,10 @@ class GrpcRequestWrapper
     /**
      * Convert a ApiCore exception to a Google Exception.
      *
-     * @param ApiException $ex
+     * @param \Exception $ex
      * @return Exception\ServiceException
      */
-    private function convertToGoogleException(ApiException $ex)
+    private function convertToGoogleException($ex)
     {
         switch ($ex->getCode()) {
             case Code::INVALID_ARGUMENT:

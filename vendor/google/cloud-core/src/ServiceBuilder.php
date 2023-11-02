@@ -17,6 +17,7 @@
 
 namespace Google\Cloud\Core;
 
+use Google\Auth\HttpHandler\Guzzle6HttpHandler;
 use Google\Auth\HttpHandler\HttpHandlerFactory;
 use Google\Cloud\BigQuery\BigQueryClient;
 use Google\Cloud\Datastore\DatastoreClient;
@@ -28,7 +29,7 @@ use Google\Cloud\Spanner\SpannerClient;
 use Google\Cloud\Speech\SpeechClient;
 use Google\Cloud\Storage\StorageClient;
 use Google\Cloud\Trace\TraceClient;
-use Google\Cloud\Translate\TranslateClient;
+use Google\Cloud\Translate\V2\TranslateClient;
 use Google\Cloud\Vision\VisionClient;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -109,10 +110,10 @@ class ServiceBuilder
      *
      * @param array $config [optional] {
      *     Configuration options. See
-     *     {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
+     *     {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
      *
      *     @type bool $returnInt64AsObject If true, 64 bit integers will be
-     *           returned as a {@see Google\Cloud\Core\Int64} object for 32 bit
+     *           returned as a {@see \Google\Cloud\Core\Int64} object for 32 bit
      *           platform compatibility. **Defaults to** false.
      *     @type string $location If provided, determines the default geographic
      *           location used when creating datasets and managing jobs. Please
@@ -140,10 +141,10 @@ class ServiceBuilder
      *
      * @param array $config [optional] {
      *     Configuration options. See
-     *     {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
+     *     {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
      *
      *     @type bool $returnInt64AsObject If true, 64 bit integers will be
-     *           returned as a {@see Google\Cloud\Core\Int64} object for 32 bit
+     *           returned as a {@see \Google\Cloud\Core\Int64} object for 32 bit
      *           platform compatibility. **Defaults to** false.
      * @return DatastoreClient
      */
@@ -164,10 +165,10 @@ class ServiceBuilder
      *
      * @param array $config [optional] {
      *     Configuration options. See
-     *     {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
+     *     {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
      *
      *     @type bool $returnInt64AsObject If true, 64 bit integers will be
-     *           returned as a {@see Google\Cloud\Core\Int64} object for 32 bit
+     *           returned as a {@see \Google\Cloud\Core\Int64} object for 32 bit
      *           platform compatibility. **Defaults to** false.
      * @return FirestoreClient
      */
@@ -188,7 +189,7 @@ class ServiceBuilder
      * ```
      *
      * @param array $config [optional] Configuration options. See
-     *        {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
+     *        {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
      * @return LoggingClient
      */
     public function logging(array $config = [])
@@ -209,7 +210,7 @@ class ServiceBuilder
      * ```
      *
      * @param array $config [optional] Configuration options. See
-     *        {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
+     *        {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
      * @return LanguageClient
      */
     public function language(array $config = [])
@@ -229,7 +230,7 @@ class ServiceBuilder
      *
      * @param array $config [optional] {
      *     Configuration options. See
-     *     {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
+     *     {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
      *
      *     @type string $transport The transport type used for requests. May be
      *           either `grpc` or `rest`. **Defaults to** `grpc` if gRPC support
@@ -253,10 +254,10 @@ class ServiceBuilder
      *
      * @param array $config [optional] {
      *     Configuration options. See
-     *     {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
+     *     {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
      *
      *     @type bool $returnInt64AsObject If true, 64 bit integers will be
-     *           returned as a {@see Google\Cloud\Core\Int64} object for 32 bit
+     *           returned as a {@see \Google\Cloud\Core\Int64} object for 32 bit
      *           platform compatibility. **Defaults to** false.
      * }
      * @return SpannerClient
@@ -281,7 +282,7 @@ class ServiceBuilder
      *
      * @param array $config [optional] {
      *     Configuration options. See
-     *     {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
+     *     {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the other available options.
      *
      *     @type string $languageCode The language of the content to
      *           be recognized. Only BCP-47 (e.g., `"en-US"`, `"es-ES"`)
@@ -306,7 +307,7 @@ class ServiceBuilder
      * ```
      *
      * @param array $config [optional] Configuration options. See
-     *        {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
+     *        {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
      * @return StorageClient
      */
     public function storage(array $config = [])
@@ -326,7 +327,7 @@ class ServiceBuilder
      * ```
      *
      * @param array $config [optional] Configuration options. See
-     *        {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
+     *        {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
      * @return TraceClient
      */
     public function trace(array $config = [])
@@ -346,7 +347,7 @@ class ServiceBuilder
      * ```
      *
      * @param array $config [optional] Configuration options. See
-     *        {@see Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
+     *        {@see \Google\Cloud\Core\ServiceBuilder::__construct()} for the available options.
      * @return VisionClient
      */
     public function vision(array $config = [])
@@ -412,7 +413,7 @@ class ServiceBuilder
     private function createClient($class, $packageName, array $config = [])
     {
         if (class_exists($class)) {
-            return new $class($this->resolveConfig($config));
+            return new $class($this->resolveConfig($config + $this->config));
         }
         throw new \Exception(sprintf(
             'The google/cloud-%s package is missing and must be installed.',
@@ -430,6 +431,12 @@ class ServiceBuilder
     {
         if (!isset($config['httpHandler'])) {
             $config['httpHandler'] = HttpHandlerFactory::build();
+        }
+
+        if (!isset($config['asyncHttpHandler'])) {
+            $config['asyncHttpHandler'] = $config['httpHandler'] instanceof Guzzle6HttpHandler
+                ? [$config['httpHandler'], 'async']
+                : [HttpHandlerFactory::build(), 'async'];
         }
 
         return array_merge($this->config, $config);

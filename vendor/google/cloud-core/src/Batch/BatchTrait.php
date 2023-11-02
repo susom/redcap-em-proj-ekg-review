@@ -93,7 +93,7 @@ trait BatchTrait
         } catch (\Exception $e) {
             if ($this->debugOutput) {
                 fwrite(
-                    $this->debugOutputResource ?: STDERR,
+                    $this->debugOutputResource,
                     $e->getMessage() . PHP_EOL . PHP_EOL
                     . $e->getTraceAsString() . PHP_EOL
                 );
@@ -104,7 +104,7 @@ trait BatchTrait
         $end = microtime(true);
         if ($this->debugOutput) {
             fwrite(
-                $this->debugOutputResource ?: STDERR,
+                $this->debugOutputResource,
                 sprintf(
                     '%f seconds for %s: %d items' . PHP_EOL,
                     $end - $start,
@@ -113,7 +113,7 @@ trait BatchTrait
                 )
             );
             fwrite(
-                $this->debugOutputResource ?: STDERR,
+                $this->debugOutputResource,
                 sprintf(
                     'memory used: %d' . PHP_EOL,
                     memory_get_usage()
@@ -130,17 +130,18 @@ trait BatchTrait
      *
      * @return array
      */
-    protected abstract function getCallback();
+    abstract protected function getCallback();
 
     /**
      * @param array $options [optional] {
      *     Configuration options.
      *
      *     @type resource $debugOutputResource A resource to output debug output
-     *           to.
+     *           to. **Defaults to** `php://stderr`.
      *     @type bool $debugOutput Whether or not to output debug information.
-     *           Please note debug output currently only applies in CLI based
-     *           applications. **Defaults to** `false`.
+     *           Please note that unless a debug output resource is configured
+     *           this setting will only apply to CLI based applications.
+     *           **Defaults to** `false`.
      *     @type array $batchOptions A set of options for a BatchJob.
      *           {@see \Google\Cloud\Core\Batch\BatchJob::__construct()} for
      *           more details.
@@ -160,7 +161,7 @@ trait BatchTrait
      *           responsible for serializing closures used in the
      *           `$clientConfig`. This is especially important when using the
      *           batch daemon. **Defaults to**
-     *           {@see Google\Cloud\Core\Batch\OpisClosureSerializer} if the
+     *           {@see \Google\Cloud\Core\Batch\OpisClosureSerializer} if the
      *           `opis/closure` library is installed.
      * }
      * @throws \InvalidArgumentException
@@ -182,23 +183,15 @@ trait BatchTrait
         $this->setSerializableClientOptions($options);
         $this->batchMethod = $options['batchMethod'];
         $this->identifier = $options['identifier'];
-        $this->debugOutputResource = isset($options['debugOutputResource'])
-            ? $options['debugOutputResource']
-            : null;
-        $this->debugOutput = isset($options['debugOutput'])
-            ? $options['debugOutput']
-            : false;
-        $batchOptions = isset($options['batchOptions'])
-            ? $options['batchOptions']
-            : [];
+        $this->debugOutputResource = $options['debugOutputResource'] ?? fopen('php://stderr', 'w');
+        $this->debugOutput = $options['debugOutput'] ?? false;
+        $batchOptions = $options['batchOptions'] ?? [];
         $this->batchOptions = $batchOptions + [
             'batchSize' => 1000,
             'callPeriod' => 2.0,
             'numWorkers' => 2
         ];
-        $this->batchRunner = isset($options['batchRunner'])
-            ? $options['batchRunner']
-            : new BatchRunner();
+        $this->batchRunner = $options['batchRunner'] ?? new BatchRunner();
         $this->batchRunner->registerJob(
             $this->identifier,
             [$this, 'send'],

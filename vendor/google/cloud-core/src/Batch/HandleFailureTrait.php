@@ -43,22 +43,28 @@ trait HandleFailureTrait
     private function initFailureFile()
     {
         $this->baseDir = getenv('GOOGLE_CLOUD_BATCH_DAEMON_FAILURE_DIR');
+
+        if ('false' === $this->baseDir) {
+            // setting the file to the string "false" will prevent logging of failed items
+            return;
+        }
+
         if ($this->baseDir === false) {
             $this->baseDir = sprintf(
                 '%s/batch-daemon-failure',
                 sys_get_temp_dir()
             );
         }
-        if (! is_dir($this->baseDir)) {
-            if (@mkdir($this->baseDir, 0700, true) === false) {
-                throw new \RuntimeException(
-                    sprintf(
-                        'Couuld not create a directory: %s',
-                        $this->baseDir
-                    )
-                );
-            }
+
+        if (!is_dir($this->baseDir) && !@mkdir($this->baseDir, 0700, true) && !is_dir($this->baseDir)) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Could not create a directory: %s',
+                    $this->baseDir
+                )
+            );
         }
+
         // Use getmypid for simplicity.
         $this->failureFile = sprintf(
             '%s/failed-items-%d',
@@ -76,9 +82,15 @@ trait HandleFailureTrait
      */
     public function handleFailure($idNum, array $items)
     {
-        $fp = @fopen($this->failureFile, 'a');
-        @fwrite($fp, serialize([$idNum => $items]) . PHP_EOL);
-        @fclose($fp);
+        if (!$this->failureFile) {
+            $this->initFailureFile();
+        }
+
+        if ($this->failureFile) {
+            $fp = @fopen($this->failureFile, 'a');
+            @fwrite($fp, json_encode(serialize([$idNum => $items])) . PHP_EOL);
+            @fclose($fp);
+        }
     }
 
     /**

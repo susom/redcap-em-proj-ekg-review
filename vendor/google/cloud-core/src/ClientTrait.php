@@ -19,10 +19,8 @@ namespace Google\Cloud\Core;
 
 use Google\Auth\CredentialsLoader;
 use Google\Auth\Credentials\GCECredentials;
-use Google\Auth\HttpHandler\HttpHandlerFactory;
 use Google\Cloud\Core\Compute\Metadata;
 use Google\Cloud\Core\Exception\GoogleException;
-use GuzzleHttp\Psr7;
 
 /**
  * Provides functionality common to each service client.
@@ -48,9 +46,7 @@ trait ClientTrait
     {
         $isGrpcExtensionLoaded = $this->isGrpcLoaded();
         $defaultTransport = $isGrpcExtensionLoaded ? 'grpc' : 'rest';
-        $transport = isset($config['transport'])
-            ? strtolower($config['transport'])
-            : $defaultTransport;
+        $transport = strtolower($config['transport'] ?? $defaultTransport);
 
         if ($transport === 'grpc') {
             if (!$isGrpcExtensionLoaded) {
@@ -93,6 +89,7 @@ trait ClientTrait
      *
      * @param  array $config
      * @return array
+     * @throws GoogleException
      */
     private function configureAuthentication(array $config)
     {
@@ -157,14 +154,14 @@ trait ClientTrait
      *
      * Process:
      * 1. If $config['projectId'] is set, use that.
-     * 2. If $config['keyFile'] is set, attempt to retrieve a project ID from
+     * 2. If an emulator is enabled, return a dummy value.
+     * 3. If $config['keyFile'] is set, attempt to retrieve a project ID from
      *    that.
-     * 3. Check `GOOGLE_CLOUD_PROJECT` environment variable.
-     * 4. Check `GCLOUD_PROJECT` environment variable.
-     * 5. If code is running on compute engine, try to get the project ID from
+     * 4. Check `GOOGLE_CLOUD_PROJECT` environment variable.
+     * 5. Check `GCLOUD_PROJECT` environment variable.
+     * 6. If code is running on compute engine, try to get the project ID from
      *    the metadata store.
-     * 6. If an emulator is enabled, return a dummy value.
-     * 4. Throw exception.
+     * 7. Throw exception.
      *
      * @param  array $config
      * @return string
@@ -177,15 +174,39 @@ trait ClientTrait
             'projectId' => null,
             'projectIdRequired' => false,
             'hasEmulator' => false,
-            'preferNumericProjectId' => false
+            'preferNumericProjectId' => false,
+            'suppressKeyFileNotice' => false
         ];
 
         if ($config['projectId']) {
             return $config['projectId'];
         }
 
-        if (isset($config['keyFile']['project_id'])) {
-            return $config['keyFile']['project_id'];
+        if ($config['hasEmulator']) {
+            return 'emulator-project';
+        }
+
+        if (isset($config['keyFile'])) {
+            if (isset($config['keyFile']['project_id'])) {
+                return $config['keyFile']['project_id'];
+            }
+
+            if ($config['suppressKeyFileNotice'] !== true) {
+                $serviceAccountUri = 'https://cloud.google.com/iam/docs/' .
+                    'creating-managing-service-account-keys#creating_service_account_keys';
+
+                trigger_error(
+                    sprintf(
+                        'A keyfile was given, but it does not contain a project ' .
+                        'ID. This can indicate an old and obsolete keyfile, ' .
+                        'in which case you should create a new one. To suppress ' .
+                        'this message, set `suppressKeyFileNotice` to `true` in your client configuration. ' .
+                        'To learn more about generating new keys, see this URL: %s',
+                        $serviceAccountUri
+                    ),
+                    E_USER_NOTICE
+                );
+            }
         }
 
         if (getenv('GOOGLE_CLOUD_PROJECT')) {
@@ -206,16 +227,14 @@ trait ClientTrait
             }
         }
 
-        if ($config['hasEmulator']) {
-            return 'emulator-project';
-        }
-
         if ($config['projectIdRequired']) {
             throw new GoogleException(
                 'No project ID was provided, ' .
                 'and we were unable to detect a default project ID.'
             );
         }
+
+        return '';
     }
 
     /**

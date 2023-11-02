@@ -17,8 +17,8 @@
 
 namespace Google\Cloud\Core\Testing\Snippet\Parser;
 
-use DomDocument;
-use Google\Cloud\Core\Testing\DocBlockStripSpaces;
+use Google\Cloud\Core\Testing\Reflection\ReflectionHandlerFactory;
+use DOMDocument;
 use Parsedown;
 use ReflectionClass;
 use ReflectionMethod;
@@ -38,6 +38,13 @@ class Parser
 {
     const SNIPPET_NAME_REGEX = '/\/\/\s?\[snippet\=(\w{0,})\]/';
 
+    private $reflection;
+
+    public function __construct()
+    {
+        $this->reflection = ReflectionHandlerFactory::create();
+    }
+
     /**
      * Get a snippet from a class.
      *
@@ -51,7 +58,7 @@ class Parser
      * @param string $class the name of the class
      * @param int|string $index The index of the example to return.
      * @return Snippet
-     * @throws Exception
+     * @throws \Exception
      */
     public function classExample($class, $index = 0)
     {
@@ -134,7 +141,11 @@ class Parser
             $class = new ReflectionClass($class);
         }
 
-        $doc = new DocBlock($class);
+        if (!$class->getDocComment()) {
+            return [];
+        }
+
+        $doc = $this->reflection->createDocBlock($class);
 
         $magic = [];
         if ($doc->getTags()) {
@@ -175,7 +186,8 @@ class Parser
      * $examples = $parser->examplesFromMethod($parser, 'examplesFromMethod');
      * ```
      *
-     * @param object $class An instance of the class to parse examples from.
+     * @param object|string $class An instance of the class to parse examples,
+     *        or the name of the class.
      * @param string|ReflectionMethod $method The name of the method to parse
      *        examples from.
      * @return array
@@ -190,7 +202,11 @@ class Parser
             return [];
         }
 
-        $doc = new DocBlock($method);
+        if (!$method->getDocComment()) {
+            return [];
+        }
+
+        $doc = $this->reflection->createDocBlock($method);
 
         $parent = $method->getDeclaringClass();
         $class = $parent->getName();
@@ -244,7 +260,7 @@ class Parser
      */
     public function examples(DocBlock $docBlock, $fullyQualifiedName, $file, $line, array $magicMethods = [])
     {
-        $text = $docBlock->getText();
+        $text = $this->reflection->getDocBlockText($docBlock);
         $parts = [];
 
         if (strpos($text, 'Example:' . PHP_EOL . '```') !== false) {
@@ -293,8 +309,8 @@ class Parser
     /**
      * Create identifier
      *
-     * @param $fqn
-     * @param $indexOrName
+     * @param string $fqn
+     * @param int|string $indexOrName
      * @return string
      */
     public function createIdentifier($fqn, $indexOrName)
@@ -322,7 +338,8 @@ class Parser
                 continue;
             }
 
-            $doc = new DocBlockStripSpaces(substr($method->getDescription(), 1, -1));
+            $class = substr($method->getDescription(), 1, -1);
+            $doc = $this->reflection->createDocBlock($class);
 
             $res[] = [
                 'name' => $method->getMethodName(),
